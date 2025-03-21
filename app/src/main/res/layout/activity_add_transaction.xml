@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".AddTransaction">
+
+    <EditText
+        android:id="@+id/priceET"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="10dp"
+        android:layout_marginTop="5dp"
+        android:autofillHints="Evento"
+        android:hint="Price"
+        android:textSize="25sp"
+        android:textStyle="bold"
+        android:inputType="textCapSentences"
+        android:maxLength="50" />
+
+    <Spinner
+        android:id="@+id/category_spinner"
+        android:layout_below="@id/priceET"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="10dp"
+        android:layout_marginTop="15dp"
+        android:padding="10dp" />
+
+    <EditText
+        android:id="@+id/noteET"
+        android:layout_below="@+id/category_spinner"
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:layout_marginHorizontal="10dp"
+        android:layout_marginTop="15dp"
+        android:autofillHints="Lorem ipsum"
+        android:gravity="start"
+        android:hint="Note"
+        android:textSize="20sp"
+        android:inputType="textCapSentences|textMultiLine"
+        android:maxLength="500" />
+
+        <RelativeLayout
+            android:id="@+id/date_timeLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/noteET"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="10dp"
+            android:layout_marginTop="5dp">
+            <Button
+                android:id="@+id/btn_date"
+                android:layout_width="150sp"
+                android:layout_height="wrap_content"
+                android:drawableStart="@drawable/date"
+                android:drawablePadding="12dp"
+                android:layout_marginStart="10dp"
+                android:layout_marginEnd="20dp"
+                android:padding="7dp"
+                android:gravity="start|center_vertical"
+                android:text="Date"
+                android:textSize="15sp"
+                android:textColor="#404040"
+                style="@style/Button"/>
+
+            <Button
+                android:id="@+id/btn_time"
+                android:layout_width="120sp"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="10dp"
+                android:drawableEnd="@drawable/time"
+                android:drawablePadding="15dp"
+                android:gravity="end|center_vertical"
+                android:padding="7dp"
+                android:text="Time"
+                android:textSize="15sp"
+                android:textColor="#404040"
+                style="@style/SecButton"/>
+        </RelativeLayout>
+
+    <Button
+        android:id="@+id/save"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/date_timeLayout"
+        android:text="Salva" />
+
+</RelativeLayout>

@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Finance Management</string>
+    <string name="money_default">€100</string>
+    <string name="text">Hello world, this is a text for testing</string>
+</resources>
