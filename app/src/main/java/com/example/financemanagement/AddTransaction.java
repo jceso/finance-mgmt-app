@@ -20,7 +20,6 @@ import java.time.LocalDateTime;
 import java.util.Locale;
 
 public class AddTransaction extends AppCompatActivity {
-    private FirebaseDatabase database;
     private EditText price, note;
     private Spinner category;
     private Button btn_date, btn_time, save;
@@ -38,8 +37,6 @@ public class AddTransaction extends AppCompatActivity {
         });
 
         // Firebase setting
-        FirebaseApp.initializeApp(AddTransaction.this);
-        database = FirebaseDatabase.getInstance("https://ing-soft-firebase-default-rtdb.europe-west1.firebasedatabase.app/");
 
 
         price = findViewById(R.id.priceET);
@@ -77,13 +74,7 @@ public class AddTransaction extends AppCompatActivity {
                 transaction.setDate(dateInfos[0], dateInfos[1], dateInfos[2], dateInfos[3], dateInfos[4]);
 
                 // Save event to Firebase
-                database.getReference().child("event").push().setValue(event).addOnSuccessListener(unused -> {
-                    progressBar.setVisibility(View.GONE);
-                    Toast.makeText(EventListAdmin.this, "Saved successfully", Toast.LENGTH_SHORT).show();
-                }).addOnFailureListener(e -> {
-                    progressBar.setVisibility(View.GONE);
-                    Toast.makeText(EventListAdmin.this, "There was an error while saving data", Toast.LENGTH_SHORT).show();
-                });
+
 
 
                 // Dismiss the dialog
