@@ -23,21 +23,5 @@ public class Settings extends AppCompatActivity {
             return insets;
         });
 
-        darkLightMode = findViewById(R.id.dark_light_mode);
-
-        darkLightMode.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                if (b) {
-                    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
-                    darkLightMode.setText("Dark mode");
-                    darkLightMode.setChecked(true);
-                } else {
-                    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
-                    darkLightMode.setText("Light mode");
-                    darkLightMode.setChecked(false);
-                }
-            }
-        });
     }
 }
