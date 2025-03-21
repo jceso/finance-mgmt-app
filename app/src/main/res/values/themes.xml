@@ -1,0 +1,68 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Light Mode Theme -->
+    <style name="Theme.FinanceManagement" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <!-- Global Background Color -->
+        <item name="android:windowBackground">@color/white</item>
+
+        <!-- Text Colors -->
+        <item name="android:textColor">@color/black</item>
+    </style>
+
+    <!-- Base Button Style -->
+    <style name="Button" parent="Widget.MaterialComponents.Button">
+        <item name="android:backgroundTint">@color/primary</item>
+        <item name="android:textColor">@color/black</item>
+        <item name="android:textStyle">bold</item>
+        <item name="strokeWidth">2dp</item>
+        <item name="strokeColor">@color/primary_light</item>
+        <item name="cornerRadius">15dp</item>
+    </style>
+
+    <!-- Secondary Button -->
+    <style name="SecButton" parent="Button">
+        <item name="android:backgroundTint">@color/secondary</item>
+        <item name="strokeWidth">1dp</item>
+        <item name="strokeColor">@color/secondary_light</item>
+    </style>
+
+    <!-- Positive Button -->
+    <style name="PosButton" parent="Button">
+        <item name="android:backgroundTint">@color/positive</item>
+        <item name="strokeWidth">2dp</item>
+        <item name="strokeColor">@color/positive_light</item>
+    </style>
+
+    <!-- Negative Button -->
+    <style name="NegButton" parent="Button">
+        <item name="android:backgroundTint">@color/negative</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="strokeWidth">2dp</item>
+        <item name="strokeColor">@color/negative_light</item>
+    </style>
+
+    <style name="Footbar">
+        <item name="android:background">@drawable/footbar_light</item>
+    </style>
+</resources>
+    <!--
+    Primary Yellow: #FFC107 (A warm, vibrant yellow for key elements)
+       - Darker: #FFA000
+       - Lighter: #FFDD57
+    Light Yellow: #FFECB3 (A softer yellow for backgrounds or highlights)
+       - Darker: #FFD54F
+       - Lighter: #FFF8E1
+
+    Positive (Success) Green: #4CAF50 (For success messages or confirmation buttons)
+       - Darker: #388E3C
+       - Lighter: #81C784
+    Negative (Danger) Red: #F44336 (For errors, warnings, or decline actions)
+       - Darker: #D32F2F
+       - Lighter: #E57373
+    Neutral Gray: #9E9E9E (For text or secondary elements)
+       - Darker: #616161
+       - Lighter: #E0E0E0
+
+    Background White: #FFFFFF (For a clean, light feel)
+    Soft Gray Background: #F5F5F5 (For slight contrast on sections)
+    Dark Text: #212121
+    -->
