@@ -23,5 +23,18 @@ public class Settings extends AppCompatActivity {
             return insets;
         });
 
+        /*
+         * PAGE TO SCHEDULE A LOCAL NOTIFICATION (ex. Every Saturday and Sunday at 9.30pm)
+         *
+         * Schedule Local Notifications Android Studio Kotlin Tutorial:
+         * https://www.youtube.com/watch?app=desktop&v=_Z2S63O-1HE
+         *
+         * AlarmManager in Android Studio || Notification using AlarmManager is Android Studio || 2023:
+         * https://www.youtube.com/watch?v=5RcDWnNgkQg
+         *
+         * Local Notifications in Android - The Full Guide (Android Studio Tutorial):
+         * https://www.youtube.com/watch?v=LP623htmWcI
+         * */
+
     }
 }

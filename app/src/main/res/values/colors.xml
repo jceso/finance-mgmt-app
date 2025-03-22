@@ -20,4 +20,8 @@
     <color name="negative">#F44336</color>
     <color name="negative_dark">#D32F2F</color>
     <color name="negative_light">#E57373</color>
+
+    <color name="grey">#9E9E9E</color>
+    <color name="grey_dark">#616161</color>
+    <color name="grey_light">#E0E0E0</color>
 </resources>

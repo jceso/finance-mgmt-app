@@ -40,6 +40,10 @@
         <item name="strokeColor">@color/negative_light</item>
     </style>
 
+    <style name="GreyCard">
+        <item name="background">@style/GreyCard</item>
+    </style>
+
     <style name="Footbar">
         <item name="android:background">@drawable/footbar_light</item>
     </style>
