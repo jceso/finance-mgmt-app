@@ -75,10 +75,14 @@ public class Home extends AppCompatActivity {
         });
 
         incomeBtn.setOnClickListener(v -> {
+            Intent intent = new Intent(Home.this, AddTransaction.class);
+            intent.putExtra("TAB_INDEX", 0); // Prima pagina (Income)
             startActivity(new Intent(Home.this, AddTransaction.class));
         });
 
         expensesBtn.setOnClickListener(view -> {
+            Intent intent = new Intent(Home.this, AddTransaction.class);
+            intent.putExtra("TAB_INDEX", 1); // Seconda pagina (Expenses)
             startActivity(new Intent(Home.this, AddTransaction.class));
         });
     }

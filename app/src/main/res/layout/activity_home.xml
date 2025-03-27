@@ -7,13 +7,16 @@
     android:layout_height="match_parent"
     tools:context=".Home">
 
+    <include layout="@layout/header" />
+
+    <!--
     <ImageView
         android:id="@+id/avatar"
         android:layout_width="70dp"
         android:layout_height="70dp"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        android:layout_marginTop="20dp"
+        android:layout_marginVertical="20dp"
         android:layout_marginStart="35dp"
         android:src="@drawable/settings"/>
 
@@ -25,6 +28,7 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_margin="35dp"/>
+    -->
 
     <!-- Si prevedono perdite maggiori rispetto al mese scorso? -->
     <!-- OPPURE  Si prevede di riuscire a mantenre il risparmio (%20%)? -->
@@ -52,7 +56,8 @@
         android:drawableStart="@drawable/credit_card"
         android:drawablePadding="15dp"
         app:layout_constraintStart_toEndOf="@+id/summary"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        android:fontFamily="@font/typo_hoop_bold" />
 
     <!-- SOLDI CASH -->
     <TextView
@@ -66,7 +71,8 @@
         android:drawableStart="@drawable/cash"
         android:drawablePadding="15dp"
         app:layout_constraintStart_toEndOf="@+id/summary"
-        app:layout_constraintTop_toBottomOf="@+id/card_money" />
+        app:layout_constraintTop_toBottomOf="@+id/card_money"
+        android:fontFamily="@font/typo_hoop"/>
 
     <!-- Rispetto al solito hai speso di più in una categoria -->
 
@@ -120,8 +126,8 @@
             android:text="Entrate"
             android:layout_weight="1"
             android:background="@drawable/income_button"
-            android:textSize="40dp"
-            android:fontFamily="@font/dongle_bold" />
+            android:textSize="35dp"
+            android:fontFamily="@font/insanibu" />
 
         <Space
             android:layout_width="4dp"
@@ -134,8 +140,8 @@
             android:layout_marginVertical="5dp"
             android:text="Uscite"
             android:layout_weight="1"
-            android:textSize="40dp"
-            android:fontFamily="@font/rubikspraypaint_regular"
+            android:textSize="35dp"
+            android:fontFamily="@font/insanibu"
             android:background="@drawable/expense_button" />
 
     </LinearLayout>

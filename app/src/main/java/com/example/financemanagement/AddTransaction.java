@@ -2,6 +2,7 @@ package com.example.financemanagement;
 
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
+import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
@@ -18,6 +19,7 @@ import androidx.viewpager2.widget.ViewPager2;
 import com.example.financemanagement.models.Transaction;
 import com.example.financemanagement.models.ViewPagerAdapter;
 import com.google.android.material.tabs.TabLayout;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.time.LocalDateTime;
 import java.util.Locale;
@@ -38,6 +40,11 @@ public class AddTransaction extends AppCompatActivity {
         viewPager2 = findViewById(R.id.viewPager);
         adapter = new ViewPagerAdapter(this);
         viewPager2.setAdapter(adapter);
+
+        // Recupera l'indice del tab passato da Home
+        int tabIndex = getIntent().getIntExtra("TAB_INDEX", 0);
+
+        viewPager2.setCurrentItem(tabIndex, false);
 
         tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
