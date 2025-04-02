@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <EditText
+        android:id="@+id/amount"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginVertical="10dp"
+        android:layout_marginHorizontal="15dp"
+        android:padding="10dp"
+        android:hint="Amount"
+        android:textSize="27sp"
+        android:fontFamily="@font/cs_boline_edited"
+        android:background="@drawable/rounded_border"/>
+
+    <DatePicker
+        android:id="@+id/datePicker"
+        android:layout_width="match_parent"
+        android:layout_height="130dp"
+        android:layout_marginVertical="10dp"
+        android:datePickerMode="spinner"
+        android:calendarViewShown="false"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <Button
+            android:id="@+id/edit_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="10dp"
+            android:layout_weight="10"
+            android:text="Edit"
+            android:textSize="30sp"
+            android:fontFamily="@font/hornbill_black"
+            style="@style/Button" />
+
+        <androidx.appcompat.widget.AppCompatImageButton
+            android:id="@+id/cancel_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:padding="10dp"
+            android:src="@drawable/cancel"
+            android:backgroundTint="@color/negative"
+            android:tint="@color/white"
+            android:background="@drawable/rounded_cash"/>
+    </LinearLayout>
+</LinearLayout>
