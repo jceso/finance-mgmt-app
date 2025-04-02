@@ -14,7 +14,7 @@
     <color name="secondary_light">#FFF8E1</color>
 
     <color name="positive">#4CAF50</color>
-    <color name="positive_dark">#388E3C</color>
+    <color name="positive_dark">#338137</color> <!-- #348338 -->
     <color name="positive_light">#81C784</color>
 
     <color name="negative">#F44336</color>

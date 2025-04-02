@@ -13,6 +13,18 @@
         android:theme="@style/Theme.FinanceManagement"
         tools:targetApi="31">
         <activity
+            android:name=".Savings"
+            android:exported="false" />
+        <activity
+            android:name=".UserProfile"
+            android:exported="false" />
+        <activity
+            android:name=".Register"
+            android:exported="false" />
+        <activity
+            android:name=".Login"
+            android:exported="false" />
+        <activity
             android:name=".AddTransaction"
             android:exported="false" />
         <activity
@@ -29,8 +41,7 @@
         </activity>
         <activity
             android:name=".MainActivity"
-            android:exported="true">
-        </activity>
+            android:exported="true" />
     </application>
 
 </manifest>

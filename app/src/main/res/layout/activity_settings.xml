@@ -35,12 +35,12 @@
                 android:layout_weight="1"
                 android:gravity="center_vertical"
                 android:padding="10dp"
-                android:text="Toolbar"
+                android:text="Dark/Light mode"
                 android:textSize="18sp"
                 android:textStyle="bold" />
 
             <Switch
-                android:id="@+id/switcher"
+                android:id="@+id/switcher_mode"
                 android:layout_width="50dp"
                 android:layout_height="50dp"
                 android:gravity="center" />
@@ -58,28 +58,69 @@
             android:textSize="15sp"
             android:textStyle="bold" />
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingHorizontal="5dp"
+            android:orientation="horizontal" >
+
+            <Button
+                android:id="@+id/card_stg"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="8dp"
+                android:paddingVertical="15dp"
+                android:text="Card setting"
+                android:textSize="17sp"
+                android:layout_weight="1"
+                style="@style/Button" />
+
+            <Button
+                android:id="@+id/cash_stg"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="8dp"
+                android:paddingVertical="15dp"
+                android:text="Cash setting"
+                android:textSize="17sp"
+                android:layout_weight="1"
+                style="@style/SecButton" />
+
+        </LinearLayout>
+
         <Button
-            style="@style/Button"
-            android:layout_width="wrap_content"
-            android:layout_height="50dp"
-            android:layout_margin="8dp"
-            android:text="Button" />
+            android:id="@+id/exp_categories"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="7dp"
+            android:layout_marginHorizontal="30dp"
+            android:paddingVertical="15dp"
+            android:text="Expenses Categories"
+            android:textSize="20sp"
+            style="@style/NegButton" />
 
-        <com.google.android.material.button.MaterialButton
-            style="@style/PosButton"
-            android:layout_width="wrap_content"
-            android:layout_height="50dp"
-            android:layout_margin="8dp"
-            android:text="Pos Button" />
-
-        <com.google.android.material.button.MaterialButton
-            style="@style/NegButton"
-            android:layout_width="wrap_content"
-            android:layout_height="50dp"
-            android:layout_margin="8dp"
-            android:text="Neg Button" />
+        <Button
+            android:id="@+id/inc_categories"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="7dp"
+            android:layout_marginHorizontal="30dp"
+            android:paddingVertical="15dp"
+            android:text="Income Categories"
+            android:textSize="20sp"
+            style="@style/PosButton" />
 
     </LinearLayout>
 
+    <Button
+        android:id="@+id/logout_btn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginHorizontal="15dp"
+        android:layout_marginBottom="10dp"
+        android:padding="15dp"
+        android:text="Logout"
+        android:textSize="15sp" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

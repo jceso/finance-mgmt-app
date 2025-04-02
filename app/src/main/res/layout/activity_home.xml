@@ -33,61 +33,81 @@
     <!-- Si prevedono perdite maggiori rispetto al mese scorso? -->
     <!-- OPPURE  Si prevede di riuscire a mantenre il risparmio (%20%)? -->
     <!-- OPPURE  Si ha ancora il risparmio/si ha ancora nelle entrate fisse o sei in perdita? -->
-    <ImageView
-        android:id="@+id/summary"
-        android:layout_width="120dp"
-        android:layout_height="120dp"
-        android:layout_marginStart="30dp"
-        android:layout_marginTop="130dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@android:drawable/arrow_down_float" />
 
-    <!-- SOLDI SULLA CARTA -->
-    <TextView
-        android:id="@+id/card_money"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="10dp"
-        android:layout_marginTop="115dp"
-        android:text="@string/money_default"
-        android:textSize="60dp"
-        android:textStyle="bold"
-        android:drawableStart="@drawable/credit_card"
-        android:drawablePadding="15dp"
-        app:layout_constraintStart_toEndOf="@+id/summary"
-        app:layout_constraintTop_toTopOf="parent"
-        android:fontFamily="@font/typo_hoop_bold" />
 
     <!-- SOLDI CASH -->
     <TextView
         android:id="@+id/cash_money"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="10dp"
+        android:layout_width="235dp"
+        android:layout_height="60dp"
+        android:layout_marginStart="-30dp"
+        android:layout_marginTop="-3dp"
+        android:autoSizeMaxTextSize="50sp"
+        android:autoSizeMinTextSize="20sp"
+        android:autoSizeStepGranularity="2sp"
+        android:autoSizeTextType="uniform"
+        android:background="@drawable/rounded_cash"
+        android:drawablePadding="7dp"
+        android:fontFamily="@font/cs_boline_edited"
+        android:paddingStart="35dp"
+        android:paddingTop="3dp"
         android:text="@string/money_default"
-        android:textSize="50dp"
-        android:textStyle="bold"
-        android:drawableStart="@drawable/cash"
-        android:drawablePadding="15dp"
+        android:textColor="@color/grey_dark"
+        app:drawableStartCompat="@drawable/cash"
+        app:drawableTint="@color/grey_dark"
         app:layout_constraintStart_toEndOf="@+id/summary"
-        app:layout_constraintTop_toBottomOf="@+id/card_money"
-        android:fontFamily="@font/typo_hoop"/>
+        app:layout_constraintTop_toBottomOf="@+id/card_money" />
+
+    <!-- Money on the card -->
+    <TextView
+        android:id="@+id/card_money"
+        android:layout_width="250dp"
+        android:layout_height="80dp"
+        android:layout_marginStart="-30dp"
+        android:layout_marginTop="135dp"
+        android:autoSizeMaxTextSize="60sp"
+        android:autoSizeMinTextSize="20sp"
+        android:autoSizeStepGranularity="2sp"
+        android:autoSizeTextType="uniform"
+        android:background="@drawable/rounded_card"
+        android:drawableStart="@drawable/credit_card"
+        android:drawablePadding="7dp"
+        android:fontFamily="@font/cs_boline_edited"
+        android:paddingStart="35dp"
+        android:paddingTop="5dp"
+        android:text="@string/money_default"
+        android:textColor="@color/dark_bg"
+        app:layout_constraintStart_toEndOf="@+id/summary"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/summary"
+        android:layout_width="145dp"
+        android:layout_height="170dp"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="120dp"
+        android:background="@drawable/pig_mood_sad"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/pig_sad_original" />
 
     <!-- Rispetto al solito hai speso di più in una categoria -->
-
-
     <TextView
         android:id="@+id/info_news"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginHorizontal="15dp"
         android:layout_marginTop="20dp"
-        android:text="Info news"
-        android:textSize="20dp"
+        android:background="@drawable/rounded_grey"
+        android:paddingHorizontal="15dp"
+        android:paddingVertical="10dp"
+        android:text="There are no news yet"
+        android:textAlignment="center"
+        android:textSize="20sp"
         android:textStyle="italic"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/cash_money" />
+        app:layout_constraintTop_toBottomOf="@+id/summary" />
 
     <!-- Schiacciando sul carousel va alla pagina relativa ai grafici -->
     <!-- Serve RecyclerView - https://www.youtube.com/watch?v=qyKa5QIBYzs -->
@@ -96,12 +116,13 @@
     <!-- Grafico a torta, costi preferiti -->
     <com.github.mikephil.charting.charts.PieChart
         android:id="@+id/chart"
-        android:layout_width="120dp"
-        android:layout_height="120dp"
-        android:layout_marginTop="20dp"
+        android:layout_width="300dp"
+        android:layout_height="200dp"
+        android:layout_marginTop="5dp"
+        app:layout_constraintBottom_toTopOf="@+id/monthly_inc"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/info_news"></com.github.mikephil.charting.charts.PieChart>
+        app:layout_constraintTop_toBottomOf="@+id/info_news" />
 
     <!-- Seconda slide - Grafico delle spese rispetto al mese/anno scorso (multiple lines chart) -->
     <!-- Terza slide - Torrette divise per tutte le categorie -->
@@ -110,24 +131,90 @@
 
 
     <LinearLayout
+        android:id="@+id/monthly_inc"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="15dp"
+        android:layout_marginBottom="10dp"
+        android:background="@drawable/rounded_positive"
+        android:orientation="horizontal"
+        android:paddingHorizontal="10dp"
+        android:paddingVertical="5dp"
+        android:textStyle="italic"
+        app:layout_constraintBottom_toTopOf="@+id/linearLayout">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingVertical="10dp"
+            android:paddingHorizontal="15dp"
+            android:drawableStart="@drawable/handshake"
+            android:drawablePadding="10dp"
+            android:drawableTint="@color/secondary_light"
+            android:text="Prestito"
+            android:textColor="@color/secondary_light"
+            android:textStyle="bold"
+            android:background="@drawable/positive_elmt"
+            android:layout_weight="3" />
+
+        <Space
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingVertical="10dp"
+            android:paddingHorizontal="15dp"
+            android:drawableStart="@drawable/job"
+            android:drawablePadding="10dp"
+            android:drawableTint="@color/secondary_light"
+            android:text="Stipendio"
+            android:textColor="@color/secondary_light"
+            android:textStyle="bold"
+            android:background="@drawable/positive_elmt"
+            android:layout_weight="11" />
+    </LinearLayout>
+
+    <!--
+    <TextView
+        android:id="@+id/monthly_inc"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="15dp"
+        android:layout_marginBottom="10dp"
+        android:background="@color/primary"
+        android:paddingHorizontal="15dp"
+        android:paddingVertical="5dp"
+        android:text="Monthly Income"
+        android:textSize="20sp"
+        android:textStyle="italic"
+        app:layout_constraintBottom_toTopOf="@+id/linearLayout"
+        tools:layout_editor_absoluteX="15dp" />
+        -->
+
+
+    <LinearLayout
+        android:id="@+id/linearLayout"
+        style="@style/Footbar"
         android:layout_width="match_parent"
         android:layout_height="100dp"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:orientation="horizontal"
         android:paddingHorizontal="20dp"
         android:paddingTop="5dp"
-        android:orientation="horizontal"
-        style="@style/Footbar" >
+        app:layout_constraintBottom_toBottomOf="parent">
 
         <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/income"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_marginVertical="5dp"
-            android:text="Entrate"
             android:layout_weight="1"
             android:background="@drawable/income_button"
-            android:textSize="35dp"
-            android:fontFamily="@font/insanibu" />
+            android:fontFamily="@font/insanibu"
+            android:text="Entrate"
+            android:textSize="35dp" />
 
         <Space
             android:layout_width="4dp"
@@ -138,11 +225,18 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_marginVertical="5dp"
-            android:text="Uscite"
             android:layout_weight="1"
-            android:textSize="35dp"
+            android:background="@drawable/expense_button"
             android:fontFamily="@font/insanibu"
-            android:background="@drawable/expense_button" />
+            android:text="Uscite"
+            android:textSize="35dp" />
 
     </LinearLayout>
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_begin="20dp" />
 </androidx.constraintlayout.widget.ConstraintLayout>

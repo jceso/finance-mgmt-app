@@ -1,33 +1,31 @@
 package com.example.financemanagement;
 
 import android.content.Intent;
-import android.media.Image;
 import android.os.Bundle;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.example.financemanagement.models.CommonFeatures;
 import com.github.mikephil.charting.charts.PieChart;
 import com.github.mikephil.charting.data.PieData;
 import com.github.mikephil.charting.data.PieDataSet;
 import com.github.mikephil.charting.data.PieEntry;
 import com.github.mikephil.charting.utils.ColorTemplate;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
 
-import android.os.Handler;
 import android.widget.Button;
-import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.Switch;
+import android.widget.TextView;
 
 public class Home extends AppCompatActivity {
-
-    private Switch darkLightMode;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,14 +59,23 @@ public class Home extends AppCompatActivity {
         PieData pieData = new PieData(pieDataSet);
         pieChart.setData(pieData);
         pieChart.getDescription().setEnabled(false);
-        pieChart.setCenterText("My Pie Chart");
+        pieChart.setCenterText("Favorite Expenses");
         pieChart.animateY(1000);
         pieChart.invalidate();
 
         ImageView avatar = findViewById(R.id.avatar);
         ImageView settings = findViewById(R.id.settings);
+        CommonFeatures.checkUserAndSetNameButton(Home.this, avatar);
+
+        ImageView pig = findViewById(R.id.summary);
         Button incomeBtn = findViewById(R.id.income);
         Button expensesBtn = findViewById(R.id.expenses);
+
+        pig.setOnClickListener(v -> {
+            startActivity(new Intent(Home.this, Savings.class));
+        });
+
+        moneySetting();
 
         settings.setOnClickListener(v -> {
             startActivity(new Intent(Home.this, Settings.class));
@@ -77,13 +84,39 @@ public class Home extends AppCompatActivity {
         incomeBtn.setOnClickListener(v -> {
             Intent intent = new Intent(Home.this, AddTransaction.class);
             intent.putExtra("TAB_INDEX", 0); // Prima pagina (Income)
-            startActivity(new Intent(Home.this, AddTransaction.class));
+            startActivity(intent);
         });
 
         expensesBtn.setOnClickListener(view -> {
             Intent intent = new Intent(Home.this, AddTransaction.class);
             intent.putExtra("TAB_INDEX", 1); // Seconda pagina (Expenses)
-            startActivity(new Intent(Home.this, AddTransaction.class));
+            startActivity(intent);
+        });
+    }
+
+    private void moneySetting() {
+        FirebaseAuth fAuth = FirebaseAuth.getInstance();
+        FirebaseFirestore fStore = FirebaseFirestore.getInstance();
+
+        TextView cardMoney = findViewById(R.id.card_money);
+        TextView cashMoney = findViewById(R.id.cash_money);
+
+        // Recupera il documento dell'utente
+        fStore.collection("Users").document(fAuth.getCurrentUser().getUid()).get()
+            .addOnSuccessListener(documentSnapshot -> {
+                if (documentSnapshot.exists()) {
+                    // Recupera i saldi da Firestore
+                    Double cashBalance = documentSnapshot.getDouble("Balances.cash");
+                    Double cardBalance = documentSnapshot.getDouble("Balances.credit_card");
+
+                    // Imposta i saldi nei TextView, gestendo valori nulli
+                    cardMoney.setText(String.format("€%.0f", cardBalance != null ? cardBalance : 0.0));
+                    cashMoney.setText(String.format("€%.0f", cashBalance != null ? cashBalance : 0.0));
+                }
+            })
+            .addOnFailureListener(e -> {
+                cardMoney.setText("Errore");
+                cashMoney.setText("Errore");
         });
     }
 }
