@@ -3,6 +3,7 @@ package com.example.financemanagement.models;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -14,21 +15,30 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.RadioGroup;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 
+import com.example.financemanagement.Home;
 import com.example.financemanagement.R;
+import com.example.financemanagement.Settings;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.time.LocalDateTime;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 public class ViewPagerAdapter extends FragmentStateAdapter {
     private static int[] dateInfos;
@@ -158,6 +168,7 @@ public class ViewPagerAdapter extends FragmentStateAdapter {
         Button date_btn = view.findViewById(R.id.btn_date);
         Button time_btn = view.findViewById(R.id.btn_time);
         Button repeat = view.findViewById(R.id.repeat);
+        RadioGroup card_or_cash = view.findViewById(R.id.card_cashGroup);
 
         spinnerSetup(category_spinner, isExpense, context);
         dateDialog(date_btn, time_btn, LocalDateTime.now(), context);
@@ -201,7 +212,19 @@ public class ViewPagerAdapter extends FragmentStateAdapter {
             } else
                 time_btn.setError(null);
 
+            if (card_or_cash.getCheckedRadioButtonId() == -1) {
+                Toast.makeText(context, "Please select a card or cash", Toast.LENGTH_SHORT).show();
+                isValid = false;
+            }
+
             if (isValid) {
+                String pmt_method;
+                if (card_or_cash.getCheckedRadioButtonId() == R.id.r_card)
+                    pmt_method = "credit_card";
+                else
+                    pmt_method = "cash";
+                Log.d("BalanceDebug", "Selected method: " + pmt_method);
+
                 // Transaction setting
                 Transaction transaction = new Transaction();
                 transaction.setType(isExpense);
@@ -209,12 +232,43 @@ public class ViewPagerAdapter extends FragmentStateAdapter {
                 transaction.setCategory(category_spinner.getSelectedItem().toString());
                 transaction.setNote(note.getText().toString());
                 transaction.setDate(dateInfos[0], dateInfos[1], dateInfos[2], dateInfos[3], dateInfos[4]);
+                transaction.setMethod(pmt_method);
 
                 // Save transaction in FirestoreFirebase
                 db.collection("Users").document(user.getUid())
                     .collection("Transactions").add(transaction)
                     .addOnSuccessListener(documentReference -> Log.d("SaveTransaction", "Saved transaction with ID: " + documentReference.getId()))
                     .addOnFailureListener(e -> Log.e("SaveTransaction", "Saving error", e));
+
+                // Update Balance
+                DocumentReference userRef = db.collection("Users").document(user.getUid());
+
+                db.runTransaction((com.google.firebase.firestore.Transaction.Function<Void>) firestoreTransaction -> {
+                        DocumentSnapshot snapshot = firestoreTransaction.get(userRef);
+
+                        Map<String, Object> methodBalance = (Map<String, Object>) snapshot.get("Balances." + pmt_method);
+                        Double oldValueObj = (Double) methodBalance.get("value");
+                        if (oldValueObj == null)
+                            throw new IllegalStateException(pmt_method + " missing 'value' field!");
+
+                        double oldValue = oldValueObj;
+                        double newValue = isExpense ? oldValue - transaction.getAmount()
+                                                    : oldValue + transaction.getAmount();
+
+                        Map<String, Object> updates = new HashMap<>();
+                        updates.put("Balances." + pmt_method + ".value", newValue);
+                        updates.put("Balances." + pmt_method + ".date", new Date());
+
+                        firestoreTransaction.update(userRef, updates);
+                        return null;
+                    }).addOnSuccessListener(aVoid -> {
+                        Log.d("BalanceDebug", "Balance and date successfully updated");
+                        Toast.makeText(context, "Transaction saved", Toast.LENGTH_SHORT).show();
+
+                        context.startActivity(new Intent(context, Home.class));
+                        if (context instanceof FragmentActivity)
+                            ((FragmentActivity) context).finish();
+                    }).addOnFailureListener(e -> Log.e("BalanceDebug", "Error updating balance", e));
             }
         });
     }

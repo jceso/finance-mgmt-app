@@ -5,16 +5,17 @@ import java.time.ZoneId;
 
 public class Transaction {
     private float amount;
-    private String note, category;
+    private String note, category, method;
     private boolean type;   // 0 = false = INCOME, 1 = true = EXPENSE
     private long date;
 
     public Transaction() { }
 
-    public Transaction(float amount, String note, String category, boolean type) {
+    public Transaction(float amount, String note, String category, String method, boolean type) {
         this.amount = amount;
         this.note = note;
         this.category = category;
+        this.method = method;
         this.type = type;
     }
 
@@ -37,6 +38,13 @@ public class Transaction {
     }
     public void setCategory(String category) {
         this.category = category;
+    }
+
+    public String getMethod() {
+        return method;
+    }
+    public void setMethod(String method) {
+        this.method = method;
     }
 
     public boolean getType() {

@@ -19,6 +19,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
+import java.util.Map;
 
 import android.widget.Button;
 import android.widget.ImageView;
@@ -105,16 +106,24 @@ public class Home extends AppCompatActivity {
         fStore.collection("Users").document(fAuth.getCurrentUser().getUid()).get()
             .addOnSuccessListener(documentSnapshot -> {
                 if (documentSnapshot.exists()) {
-                    // Recupera i saldi da Firestore
-                    Double cashBalance = documentSnapshot.getDouble("Balances.cash");
-                    Double cardBalance = documentSnapshot.getDouble("Balances.credit_card");
+                    // Leggi credit_card
+                    Map<String, Object> creditCardMap = (Map<String, Object>) documentSnapshot.get("Balances.credit_card");
+                    Long cardBalance = 0L;
+                    if (creditCardMap != null && creditCardMap.get("value") instanceof Number) {
+                        cardBalance = ((Number) creditCardMap.get("value")).longValue();
+                    }
+                    // Leggi cash
+                    Map<String, Object> cashMap = (Map<String, Object>) documentSnapshot.get("Balances.cash");
+                    Long cashBalance = 0L;
+                    if (cashMap != null && cashMap.get("value") instanceof Number) {
+                        cashBalance = ((Number) cashMap.get("value")).longValue();
+                    }
 
                     // Imposta i saldi nei TextView, gestendo valori nulli
-                    cardMoney.setText(String.format("€%.0f", cardBalance != null ? cardBalance : 0.0));
-                    cashMoney.setText(String.format("€%.0f", cashBalance != null ? cashBalance : 0.0));
+                    cardMoney.setText(String.format("€%d", cardBalance));
+                    cashMoney.setText(String.format("€%d", cashBalance));
                 }
-            })
-            .addOnFailureListener(e -> {
+            }).addOnFailureListener(e -> {
                 cardMoney.setText("Errore");
                 cashMoney.setText("Errore");
         });

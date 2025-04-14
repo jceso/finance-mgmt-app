@@ -2,7 +2,6 @@ package com.example.financemanagement;
 
 import static com.example.financemanagement.models.CommonFeatures.setAppTheme;
 
-import android.app.Activity;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
@@ -30,7 +29,10 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Date;
+import java.util.Map;
 
 public class Settings extends AppCompatActivity {
     private FirebaseFirestore db;
@@ -64,7 +66,10 @@ public class Settings extends AppCompatActivity {
         Button card_stg = findViewById(R.id.card_stg);
         Button cash_stg = findViewById(R.id.cash_stg);
         card_stg.setOnClickListener(view -> {
-            showCreditCardDialog();
+            showDialog("credit_card");
+        });
+        cash_stg.setOnClickListener(view -> {
+            showDialog("cash");
         });
 
         // Initialize the switch and check current mode
@@ -97,58 +102,53 @@ public class Settings extends AppCompatActivity {
 
     }
 
-    private void showCreditCardDialog() {
+    private void showDialog(String type) {
         // Create the AlertDialog.Builder instance
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Inserisci il saldo della carta di credito");
+        if (type.equals("credit_card"))
+            builder.setTitle("Insert credit card money");
+        else
+            builder.setTitle("Insert cash money");
 
         // Inflate the custom layout from XML
         View dialogView = getLayoutInflater().inflate(R.layout.dialog_edit_card_cash, null);
         builder.setView(dialogView);
 
-        // Get references to the views in the custom layout
         EditText amountEditText = dialogView.findViewById(R.id.amount);
-        DatePicker datePicker = dialogView.findViewById(R.id.datePicker);
+        DatePicker date_picker = dialogView.findViewById(R.id.datePicker);
         Button editButton = dialogView.findViewById(R.id.edit_btn);
         AppCompatImageButton cancelButton = dialogView.findViewById(R.id.cancel_btn);
+
+        // Create and show the dialog
+        AlertDialog dialog = builder.create();
+        cancelButton.setOnClickListener(v -> dialog.dismiss());
+        dialog.show();
 
         // Set an onClickListener for the "Edit" button (you can handle the functionality here)
         editButton.setOnClickListener(v -> {
             String amountStr = amountEditText.getText().toString().trim();
             if (!amountStr.isEmpty()) {
-                try {
-                    Float creditCardValue = Float.valueOf(amountStr);
+                Float creditCardValue = Float.valueOf(amountStr);
+                Date currentDateTime = new Date();
 
-                    // Update the value in Firestore
-                    db.collection("Users").document(user.getUid())
-                            .collection("Balances").document("credit_card")
-                            .update("value", creditCardValue)
-                            .addOnSuccessListener(aVoid -> {
-                                Toast.makeText(Settings.this, "Saldo della carta di credito aggiornato", Toast.LENGTH_SHORT).show();
-                            })
-                            .addOnFailureListener(e -> {
-                                Toast.makeText(Settings.this, "Errore nel salvataggio del saldo", Toast.LENGTH_SHORT).show();
-                            });
-                } catch (NumberFormatException e) {
-                    // If the value entered is not a valid number, show an error message
-                    Toast.makeText(Settings.this, "Inserisci un valore valido", Toast.LENGTH_SHORT).show();
-                }
-            } else {
-                // Show an error message if the input is empty
-                Toast.makeText(Settings.this, "Inserisci un valore valido", Toast.LENGTH_SHORT).show();
-            }
-        });
+                // Prepare the data
+                Map<String, Object> creditCardData = new HashMap<>();
+                creditCardData.put("value", creditCardValue);
+                creditCardData.put("date", currentDateTime);
 
-        // Create and show the dialog
-        AlertDialog dialog = builder.create();
-        // Set an onClickListener for the "Cancel" button (dismiss the dialog when cancel is clicked)
-        cancelButton.setOnClickListener(v -> {
-            // Dismiss the dialog when cancel is clicked
-            dialog.dismiss();
+                // Update the value in Firestore
+                db.collection("Users").document(user.getUid())
+                    .update("Balances." + type, creditCardData)
+                    .addOnSuccessListener(aVoid -> {
+                        Toast.makeText(Settings.this, type + " balance updated", Toast.LENGTH_SHORT).show();
+                    }).addOnFailureListener(e -> {
+                    Toast.makeText(Settings.this, "Error while saving " + type + " balance", Toast.LENGTH_SHORT).show();
+                });
+                dialog.dismiss();
+            } else  // Show an error message if the input is empty
+                Toast.makeText(Settings.this, "Insert a valid amount", Toast.LENGTH_SHORT).show();
         });
-        dialog.show();
     }
-
 
     private void showCategoriesDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);

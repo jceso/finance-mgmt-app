@@ -17,7 +17,7 @@
         android:layout_marginHorizontal="10dp"
         android:padding="15dp"
         android:autofillHints="12.34"
-        android:hint="Amount (€12,34)"
+        android:hint="Amount (€12.34)"
         android:textColorHint="@color/grey_dark"
         android:textSize="25sp"
         android:textColor="@color/dark_bg"
@@ -113,11 +113,13 @@
         android:background="@drawable/rounded_grey" >
 
         <RadioGroup
+            android:id="@+id/card_cashGroup"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal" >
 
             <RadioButton
+                android:id="@+id/r_card"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/hornbill_black"
@@ -129,6 +131,7 @@
                 />
 
             <RadioButton
+                android:id="@+id/r_cash"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/hornbill_black"
