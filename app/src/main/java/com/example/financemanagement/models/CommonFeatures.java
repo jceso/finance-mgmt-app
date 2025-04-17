@@ -1,5 +1,7 @@
 package com.example.financemanagement.models;
 
+import static androidx.core.content.ContextCompat.startActivity;
+
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -7,8 +9,14 @@ import android.util.Log;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import androidx.activity.OnBackPressedCallback;
+import androidx.activity.OnBackPressedDispatcher;
+import androidx.lifecycle.LifecycleOwner;
+
+import com.example.financemanagement.Home;
 import com.example.financemanagement.Login;
 import com.example.financemanagement.R;
+import com.example.financemanagement.Settings;
 import com.example.financemanagement.UserProfile;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -26,6 +34,17 @@ public class CommonFeatures {
             activity.setTheme(R.style.Theme_FinanceManagement);
             Log.d("DarkLight","Light mode enabled " + isDarkMode + R.style.Theme_FinanceManagement);
         }
+    }
+
+    public static void setBackToHome(final Activity activity, LifecycleOwner lifecycleOwner, OnBackPressedDispatcher dispatcher) {
+        dispatcher.addCallback(lifecycleOwner, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                // intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                activity.startActivity(new Intent(activity, Home.class));
+                activity.finish();
+            }
+        });
     }
 
     // Check user authentication and set user button text

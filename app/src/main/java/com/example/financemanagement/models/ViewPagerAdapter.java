@@ -34,6 +34,7 @@ import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -105,12 +106,18 @@ public class ViewPagerAdapter extends FragmentStateAdapter {
                 .collection("Categories").document(categoryType).get()
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
-                        List<String> categories = (List<String>) documentSnapshot.get("categories");
-                        Log.d("SpinnerSetup", "Categories: " + categories);
+                        List<Map<String, Object>> categoriesMap = (List<Map<String, Object>>) documentSnapshot.get("categories");
+                        Log.d("SpinnerSetup", "Categories: " + categoriesMap);
 
-                        if (categories != null) {
-                            ArrayAdapter<String> adapter = new ArrayAdapter<>(context, R.layout.spinner_item, categories);
-                            adapter.setDropDownViewResource(R.layout.spinner_dropdown_item);
+                        if (categoriesMap != null) {
+                            List<Category> categories = new ArrayList<>();
+                            for (Map<String, Object> cat : categoriesMap) {
+                                String name = (String) cat.get("name");
+                                String icon = (String) cat.get("icon");
+                                categories.add(new Category(name, icon));
+                            }
+
+                            CategoryAdapter adapter = new CategoryAdapter(context, categories);
                             category_spinner.setAdapter(adapter);
                         }
                     }

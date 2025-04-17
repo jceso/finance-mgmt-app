@@ -19,6 +19,7 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -112,8 +113,21 @@ public class Register extends AppCompatActivity {
                             .addOnFailureListener(e -> Log.e("UserCreation", "Error saving user and balances", e));
 
                     // Define default EXPENSES and INCOME array
-                    List<String> expensesCategories = Arrays.asList("Cibo", "Casa", "Sport", "Benessere", "Vestiti", "Trasporti", "Abbonamenti", "Cibo fuori casa", "Svago");
-                    List<String> incomesCategories = Arrays.asList("Stipendio", "Regalo", "Prestito");
+                    List<Map<String, Object>> expensesCategories = new ArrayList<>();
+                    expensesCategories.add(createCategory("Food", "ic_food"));
+                    expensesCategories.add(createCategory("Home", "ic_home"));
+                    expensesCategories.add(createCategory("Sport", "ic_sport"));
+                    expensesCategories.add(createCategory("Wellness", "ic_wellness"));
+                    expensesCategories.add(createCategory("Clothes", "ic_clothes"));
+                    expensesCategories.add(createCategory("Transportation", "ic_transport"));
+                    expensesCategories.add(createCategory("Subscriptions", "ic_subscriptions"));
+                    expensesCategories.add(createCategory("Cibo fuori casa", "ic_out_of_home"));
+                    expensesCategories.add(createCategory("Svago", "ic_entertainment"));
+
+                    List<Map<String, Object>> incomesCategories = new ArrayList<>();
+                    incomesCategories.add(createCategory("Stipendio", "ic_job"));
+                    incomesCategories.add(createCategory("Regalo", "ic_giftcard"));
+                    incomesCategories.add(createCategory("Loan", "ic_handshake"));
 
                     // Save "Categories" collection
                     Map<String, Object> expensesMap = new HashMap<>();
@@ -138,5 +152,12 @@ public class Register extends AppCompatActivity {
 
             });
         });
+    }
+
+    private static Map<String, Object> createCategory(String name, String icon) {
+        Map<String, Object> category = new HashMap<>();
+        category.put("name", name);
+        category.put("icon", icon);
+        return category;
     }
 }

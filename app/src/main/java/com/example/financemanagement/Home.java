@@ -8,6 +8,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.activity.OnBackPressedCallback;
 
 import com.example.financemanagement.models.CommonFeatures;
 import com.github.mikephil.charting.charts.PieChart;
@@ -21,12 +22,16 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import java.util.ArrayList;
 import java.util.Map;
 
+import android.util.Log;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class Home extends AppCompatActivity {
+    private long lastBackPressedTime = 0;
+    private Toast backToast;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,6 +42,24 @@ public class Home extends AppCompatActivity {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
+        });
+
+        // Set back button action
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                long currentTime = System.currentTimeMillis();
+
+                if (lastBackPressedTime + 2000 > currentTime) {
+                    if (backToast != null)
+                        backToast.cancel();
+                    finish();
+                } else {
+                    backToast = Toast.makeText(Home.this, "Press again to exit", Toast.LENGTH_SHORT);
+                    backToast.show();
+                    lastBackPressedTime = currentTime;
+                }
+            }
         });
 
         PieChart pieChart = findViewById(R.id.chart);
@@ -74,24 +97,28 @@ public class Home extends AppCompatActivity {
 
         pig.setOnClickListener(v -> {
             startActivity(new Intent(Home.this, Savings.class));
+            finish();
         });
 
         moneySetting();
 
         settings.setOnClickListener(v -> {
             startActivity(new Intent(Home.this, Settings.class));
+            finish();
         });
 
         incomeBtn.setOnClickListener(v -> {
             Intent intent = new Intent(Home.this, AddTransaction.class);
             intent.putExtra("TAB_INDEX", 0); // Prima pagina (Income)
             startActivity(intent);
+            finish();
         });
 
         expensesBtn.setOnClickListener(view -> {
             Intent intent = new Intent(Home.this, AddTransaction.class);
             intent.putExtra("TAB_INDEX", 1); // Seconda pagina (Expenses)
             startActivity(intent);
+            finish();
         });
     }
 
@@ -106,22 +133,37 @@ public class Home extends AppCompatActivity {
         fStore.collection("Users").document(fAuth.getCurrentUser().getUid()).get()
             .addOnSuccessListener(documentSnapshot -> {
                 if (documentSnapshot.exists()) {
-                    // Leggi credit_card
-                    Map<String, Object> creditCardMap = (Map<String, Object>) documentSnapshot.get("Balances.credit_card");
-                    Long cardBalance = 0L;
-                    if (creditCardMap != null && creditCardMap.get("value") instanceof Number) {
-                        cardBalance = ((Number) creditCardMap.get("value")).longValue();
-                    }
-                    // Leggi cash
-                    Map<String, Object> cashMap = (Map<String, Object>) documentSnapshot.get("Balances.cash");
-                    Long cashBalance = 0L;
-                    if (cashMap != null && cashMap.get("value") instanceof Number) {
-                        cashBalance = ((Number) cashMap.get("value")).longValue();
-                    }
+                    Object balancesObj = documentSnapshot.get("Balances");
 
-                    // Imposta i saldi nei TextView, gestendo valori nulli
-                    cardMoney.setText(String.format("€%d", cardBalance));
-                    cashMoney.setText(String.format("€%d", cashBalance));
+                    if (balancesObj instanceof Map) {
+                        Map<String, Object> balancesMap = (Map<String, Object>) balancesObj;
+                        long cardBalance = 0L;
+                        long cashBalance = 0L;
+
+                        Object creditCardObj = balancesMap.get("credit_card");
+                        if (creditCardObj instanceof Map) {
+                            Map<String, Object> creditCardMap = (Map<String, Object>) creditCardObj;
+                            Object value = creditCardMap.get("value");
+                            if (value instanceof Number) {
+                                cardBalance = ((Number) value).longValue();
+                            }
+                        }
+
+                        Object cashObj = balancesMap.get("cash");
+                        if (cashObj instanceof Map) {
+                            Map<String, Object> cashMap = (Map<String, Object>) cashObj;
+                            Object value = cashMap.get("value");
+                            if (value instanceof Number) {
+                                cashBalance = ((Number) value).longValue();
+                            }
+                        }
+
+                        cardMoney.setText(String.format("€%d", cardBalance));
+                        cashMoney.setText(String.format("€%d", cashBalance));
+                    } else {
+                        cardMoney.setText("€0");
+                        cashMoney.setText("€0");
+                    }
                 }
             }).addOnFailureListener(e -> {
                 cardMoney.setText("Errore");

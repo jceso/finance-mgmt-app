@@ -26,8 +26,8 @@
         android:hint="Email"
         android:inputType="textEmailAddress"
         android:padding="18dp"
-        android:textColor="@color/white"
-        android:textColorHint="@color/white"
+        android:textColor="@color/grey_dark"
+        android:textColorHint="@color/grey"
         android:textSize="20sp"
         android:maxLength="50" />
 
@@ -42,8 +42,8 @@
         android:hint="Password"
         android:inputType="textPassword"
         android:padding="18dp"
-        android:textColor="@color/white"
-        android:textColorHint="@color/white"
+        android:textColor="@color/grey_dark"
+        android:textColorHint="@color/grey"
         android:textSize="20sp"
         android:maxLength="20" />
 

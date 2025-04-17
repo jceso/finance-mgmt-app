@@ -39,6 +39,7 @@ public class UserProfile extends AppCompatActivity {
         });
 
         // Set basic buttons
+        CommonFeatures.setBackToHome(this, this, getOnBackPressedDispatcher());
         Button logout_btn = findViewById(R.id.logout_btn);
         logout_btn.setOnClickListener(v -> CommonFeatures.handleLogoutButton(UserProfile.this));
         ImageView name_btn = findViewById(R.id.user);
