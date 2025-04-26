@@ -23,6 +23,9 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 public class CommonFeatures {
+    private static long lastBackPressedTime = 0;
+    private static Toast backToast;
+
     // Apply theme based on saved preferences
     public static void setAppTheme(Boolean isDarkMode, Activity activity) {
         if (isDarkMode) {
@@ -36,6 +39,7 @@ public class CommonFeatures {
         }
     }
 
+    // Static method to handle back press
     public static void setBackToHome(final Activity activity, LifecycleOwner lifecycleOwner, OnBackPressedDispatcher dispatcher) {
         dispatcher.addCallback(lifecycleOwner, new OnBackPressedCallback(true) {
             @Override
@@ -43,6 +47,26 @@ public class CommonFeatures {
                 // intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                 activity.startActivity(new Intent(activity, Home.class));
                 activity.finish();
+            }
+        });
+    }
+
+    // Static method to handle back press in starting views
+    public static void setBackExit(final Activity activity, LifecycleOwner lifecycleOwner, OnBackPressedDispatcher dispatcher) {
+        dispatcher.addCallback(lifecycleOwner, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                long currentTime = System.currentTimeMillis();
+
+                if (lastBackPressedTime + 2000 > currentTime) {
+                    if (backToast != null)
+                        backToast.cancel();
+                    activity.finish(); // Close the activity
+                } else {
+                    backToast = Toast.makeText(activity, "Press again to exit", Toast.LENGTH_SHORT);
+                    backToast.show();
+                    lastBackPressedTime = currentTime;
+                }
             }
         });
     }

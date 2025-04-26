@@ -9,11 +9,9 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
-import android.widget.TextView;
 import android.widget.RadioGroup;
 import android.widget.Toast;
 
@@ -24,13 +22,11 @@ import androidx.viewpager2.adapter.FragmentStateAdapter;
 
 import com.example.financemanagement.Home;
 import com.example.financemanagement.R;
-import com.example.financemanagement.Settings;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.time.LocalDateTime;
@@ -40,6 +36,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 
 public class ViewPagerAdapter extends FragmentStateAdapter {
     private static int[] dateInfos;
@@ -99,29 +96,37 @@ public class ViewPagerAdapter extends FragmentStateAdapter {
 
     private static void spinnerSetup(Spinner category_spinner, Boolean isExpense, Context context) {
         if (user != null) {
-            String categoryType = isExpense ? "expenses" : "incomes";
+            String categoryType = isExpense ? "expense" : "income";
             Log.d("SpinnerSetup","Category type: " + categoryType);
 
-            db.collection("Users").document(user.getUid())
-                .collection("Categories").document(categoryType).get()
+            db.collection("Users").document(user.getUid()).get()
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
-                        List<Map<String, Object>> categoriesMap = (List<Map<String, Object>>) documentSnapshot.get("categories");
+                        // Retrieve the categories array from the user document
+                        Map<String, Map<String, Object>> categoriesMap = (Map<String, Map<String, Object>>) documentSnapshot.get("categories");
                         Log.d("SpinnerSetup", "Categories: " + categoriesMap);
 
                         if (categoriesMap != null) {
                             List<Category> categories = new ArrayList<>();
-                            for (Map<String, Object> cat : categoriesMap) {
-                                String name = (String) cat.get("name");
-                                String icon = (String) cat.get("icon");
-                                categories.add(new Category(name, icon));
+
+                            for (Map.Entry<String, Map<String, Object>> entry : categoriesMap.entrySet()) {
+                                String name = entry.getKey();
+                                Map<String, Object> cat = entry.getValue();
+                                String type = (String) cat.get("type");
+
+                                Log.d("SpinnerSetup", "Name: " + name + ", Type: " + type + " - Asked for: " + categoryType);
+
+                                if (Objects.equals(type, categoryType)) {
+                                    String icon = (String) cat.get("icon");
+                                    categories.add(new Category(type, name, icon));
+                                }
                             }
 
                             CategoryAdapter adapter = new CategoryAdapter(context, categories);
                             category_spinner.setAdapter(adapter);
                         }
                     }
-                }).addOnFailureListener(e -> Log.e("SpinnerSetup", "Error in retrieving categories", e));
+            }).addOnFailureListener(e -> Log.e("SpinnerSetup", "Error in retrieving categories", e));
         }
     }
 
@@ -134,7 +139,7 @@ public class ViewPagerAdapter extends FragmentStateAdapter {
                 dateInfos[0] = day;
                 dateInfos[1] = month+1;   //Convert 0-based month to 1-based (DatePickerDialog -> LocalDateTime)
                 dateInfos[2] = year;
-                String dateText = day + "/" + (month+1) + "/" + year;
+                String dateText = day + "/" + (month+1) + "/" + (year % 100);
 
                 // Ensure month is valid (1-12)
                 if (dateInfos[1] < 1 || dateInfos[1] > 12) {
@@ -144,7 +149,6 @@ public class ViewPagerAdapter extends FragmentStateAdapter {
 
                 Log.d("DatePickerDialog", "Selected date: " + dateInfos[0] + "/" + dateInfos[1] + "/" + dateInfos[2]);
                 btn_date.setText(dateText);
-                btn_date.setTextSize(22);
             }, editDate.getYear(), editDate.getMonthValue()-1, editDate.getDayOfMonth());
 
             dialog.getDatePicker();
@@ -188,7 +192,7 @@ public class ViewPagerAdapter extends FragmentStateAdapter {
                 repeatRadioGroup.setVisibility(View.GONE);
                 repeatText.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.circle, 0);
             }
-             */
+            */
         });
 
         save_btn.setOnClickListener(v -> {
@@ -234,9 +238,9 @@ public class ViewPagerAdapter extends FragmentStateAdapter {
 
                 // Transaction setting
                 Transaction transaction = new Transaction();
-                transaction.setType(isExpense);
+                transaction.setType(isExpense ? "expense" : "income");
                 transaction.setAmount(Float.parseFloat(amount.getText().toString()));
-                transaction.setCategory(category_spinner.getSelectedItem().toString());
+                transaction.setCategory(((Category)category_spinner.getSelectedItem()).getName());
                 transaction.setNote(note.getText().toString());
                 transaction.setDate(dateInfos[0], dateInfos[1], dateInfos[2], dateInfos[3], dateInfos[4]);
                 transaction.setMethod(pmt_method);
@@ -244,7 +248,7 @@ public class ViewPagerAdapter extends FragmentStateAdapter {
                 // Save transaction in FirestoreFirebase
                 db.collection("Users").document(user.getUid())
                     .collection("Transactions").add(transaction)
-                    .addOnSuccessListener(documentReference -> Log.d("SaveTransaction", "Saved transaction with ID: " + documentReference.getId()))
+                    .addOnSuccessListener(documentReference -> Log.d("SaveTransaction", "Saved transaction with ID: " + documentReference.getId() + " | Category " + transaction.getCategory()))
                     .addOnFailureListener(e -> Log.e("SaveTransaction", "Saving error", e));
 
                 // Update Balance
@@ -254,7 +258,7 @@ public class ViewPagerAdapter extends FragmentStateAdapter {
                         DocumentSnapshot snapshot = firestoreTransaction.get(userRef);
 
                         Map<String, Object> methodBalance = (Map<String, Object>) snapshot.get("Balances." + pmt_method);
-                        Double oldValueObj = (Double) methodBalance.get("value");
+                        Double oldValueObj = (Double) Objects.requireNonNull(methodBalance).get("value");
                         if (oldValueObj == null)
                             throw new IllegalStateException(pmt_method + " missing 'value' field!");
 

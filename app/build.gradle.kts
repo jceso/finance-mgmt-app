@@ -48,4 +48,5 @@ dependencies {
     androidTestImplementation(libs.espresso.core)
 
     implementation(libs.mpachart)
+    implementation(libs.circleindicator)
 }

@@ -14,7 +14,7 @@
     <!-- OPPURE  Si ha ancora il risparmio/si ha ancora nelle entrate fisse o sei in perdita? -->
 
 
-    <!-- SOLDI CASH -->
+    <!-- CASH -->
     <TextView
         android:id="@+id/cash_money"
         android:layout_width="235dp"
@@ -23,9 +23,9 @@
         android:layout_marginTop="-3dp"
         android:paddingStart="35dp"
         android:paddingTop="3dp"
-        android:paddingEnd="2dp"
+        android:paddingEnd="4dp"
         android:drawablePadding="7dp"
-        android:text="@string/money_default"
+        android:text="@string/amount_money"
         android:textColor="@color/grey_dark"
         android:fontFamily="@font/cs_boline_edited"
         android:gravity="center_vertical"
@@ -39,7 +39,7 @@
         app:layout_constraintStart_toEndOf="@+id/summary"
         app:layout_constraintTop_toBottomOf="@+id/card_money" />
 
-    <!-- Money on the card -->
+    <!-- CARD -->
     <TextView
         android:id="@+id/card_money"
         android:layout_width="250dp"
@@ -48,10 +48,10 @@
         android:layout_marginTop="135dp"
         android:paddingStart="35dp"
         android:paddingTop="5dp"
-        android:paddingEnd="2dp"
+        android:paddingEnd="5dp"
         android:drawablePadding="7dp"
         android:background="@drawable/rounded_card"
-        android:text="@string/money_default"
+        android:text="@string/amount_money"
         android:textColor="@color/dark_bg"
         android:fontFamily="@font/cs_boline_edited"
         android:gravity="center_vertical"
@@ -93,26 +93,36 @@
         app:layout_constraintTop_toBottomOf="@+id/summary" />
 
     <!-- Schiacciando sul carousel va alla pagina relativa ai grafici -->
-    <!-- Serve RecyclerView - https://www.youtube.com/watch?v=qyKa5QIBYzs -->
-
-
-    <!-- Grafico a torta, costi preferiti -->
-    <com.github.mikephil.charting.charts.PieChart
-        android:id="@+id/chart"
-        android:layout_width="300dp"
-        android:layout_height="200dp"
-        android:layout_marginTop="5dp"
+    <!-- Prima slide - Torta delle categorie preferite -->
+    <!-- Seconda slide - Torrette divise per tutte le categorie -->
+    <!-- Terza slide - Grafico delle spese rispetto al mese/anno scorso (multiple lines chart) -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="260dp"
+        android:layout_marginHorizontal="8dp"
+        android:paddingHorizontal="15dp"
+        android:paddingVertical="10dp"
         app:layout_constraintBottom_toTopOf="@+id/monthly_inc"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/info_news" />
+        app:layout_constraintTop_toBottomOf="@+id/info_news"
+        android:orientation="vertical"
+        android:background="@drawable/rounded_light">
 
-    <!-- Seconda slide - Grafico delle spese rispetto al mese/anno scorso (multiple lines chart) -->
-    <!-- Terza slide - Torrette divise per tutte le categorie -->
+        <androidx.viewpager2.widget.ViewPager2
+            android:id="@+id/view_pager"
+            android:layout_width="match_parent"
+            android:layout_height="220dp" />
+
+        <me.relex.circleindicator.CircleIndicator3
+            android:id="@+id/circle_indicator"
+            android:layout_width="match_parent"
+            android:layout_height="20dp"
+            app:ci_drawable="@drawable/bg_indicator"/>
+
+    </LinearLayout>
 
     <!-- Soldi mensili di Entrate -->
-
-
     <LinearLayout
         android:id="@+id/monthly_inc"
         android:layout_width="match_parent"
@@ -127,11 +137,12 @@
         app:layout_constraintBottom_toTopOf="@+id/linearLayout">
 
         <TextView
+            android:id="@+id/loan_money"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:paddingVertical="10dp"
             android:paddingHorizontal="15dp"
-            android:drawableStart="@drawable/ic_handshake"
+            android:drawableStart="@drawable/icc_handshake"
             android:drawablePadding="10dp"
             android:drawableTint="@color/secondary_light"
             android:text="Prestito"
@@ -146,11 +157,12 @@
             android:layout_weight="1" />
 
         <TextView
+            android:id="@+id/salary_money"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:paddingVertical="10dp"
             android:paddingHorizontal="15dp"
-            android:drawableStart="@drawable/ic_job"
+            android:drawableStart="@drawable/icc_job"
             android:drawablePadding="10dp"
             android:drawableTint="@color/secondary_light"
             android:text="Stipendio"

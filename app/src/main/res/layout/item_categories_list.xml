@@ -19,7 +19,7 @@
             android:layout_height="match_parent"
             android:layout_alignParentStart="true"
             android:padding="7dp"
-            android:src="@drawable/ic_handshake"
+            android:src="@drawable/icc_handshake"
             app:tint="@color/primary" />
 
         <TextView

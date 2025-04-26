@@ -1,6 +1,7 @@
 package com.example.financemanagement.models;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,22 +21,9 @@ public class CategoryAdapter extends ArrayAdapter<Category> {
 
     private static final Map<String, Integer> categoryIcons = new HashMap<>();
 
-    static {
-        // Aggiungi qui la tua mappa di icone
-        categoryIcons.put("Food", R.drawable.ic_food);
-        categoryIcons.put("Home", R.drawable.ic_home);
-        categoryIcons.put("Sport", R.drawable.ic_sport);
-        categoryIcons.put("Wellness", R.drawable.ic_wellness);
-        categoryIcons.put("Clothes", R.drawable.ic_clothes);
-        categoryIcons.put("Trasportation", R.drawable.ic_transport);
-        categoryIcons.put("Subscriptions", R.drawable.ic_subscriptions);
-        categoryIcons.put("Cibo fuori casa", R.drawable.ic_outside);
-        categoryIcons.put("Svago", R.drawable.ic_entertainment);
-        // Aggiungi altre categorie se necessario
-    }
-
     public CategoryAdapter(Context context, List<Category> categories) {
         super(context, 0, categories);
+        Log.d("CategoryAdapter", "CategoryAdapter created with " + categories.size() + " categories: " + categories);
         this.context = context;
         this.categories = categories;
     }
@@ -57,18 +45,37 @@ public class CategoryAdapter extends ArrayAdapter<Category> {
         ImageView iconView = convertView.findViewById(R.id.icon);
         TextView nameView = convertView.findViewById(R.id.name);
 
+        // Get the category and set the icon
         Category category = categories.get(position);
+        int iconResId = getIconResourceId(category.getIcon());
+        Log.d("CategoryAdapter", "Category: " + category.getName() + ", Icon resource ID: " + iconResId);
 
-        // Recupera il resId dalla mappa
-        Integer iconResId = categoryIcons.get(category.getName());
-
-        if (iconResId != null)
+        if (iconResId != 0)
             iconView.setImageResource(iconResId);
-        else    // Fallback: se non c'è un'icona per la categoria, usa una default
-            iconView.setImageResource(R.drawable.ic_category);
+        else    // Fallback icon
+            iconView.setImageResource(R.drawable.icc_category);
 
         nameView.setText(category.getName());
 
         return convertView;
+    }
+
+    private int getIconResourceId(String iconName) {
+        // Use reflection or a conditional block to return the correct icon resource ID
+        switch (iconName) {
+            case "icc_food": return R.drawable.icc_food;
+            case "icc_home": return R.drawable.icc_home;
+            case "icc_sport": return R.drawable.icc_sport;
+            case "icc_wellness": return R.drawable.icc_wellness;
+            case "icc_clothes": return R.drawable.icc_clothes;
+            case "icc_transport": return R.drawable.icc_transport;
+            case "icc_subscriptions": return R.drawable.icc_subscriptions;
+            case "icc_out_of_home": return R.drawable.icc_outside;
+            case "icc_entertainment": return R.drawable.icc_entertainment;
+            case "icc_job": return R.drawable.icc_job;
+            case "icc_giftcard": return R.drawable.icc_giftcard;
+            case "icc_handshake": return R.drawable.icc_handshake;
+            default: return 0;  // No icon found, return default icon
+        }
     }
 }

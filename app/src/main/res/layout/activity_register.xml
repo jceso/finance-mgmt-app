@@ -81,9 +81,9 @@
         android:id="@+id/log_now"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="150dp"
+        android:layout_marginTop="220dp"
         android:gravity="bottom|end"
         android:text="Login now"
-        android:textColor="#B3FFFFFF"
+        android:textColor="@color/grey_dark"
         android:textSize="18sp" />
 </LinearLayout>

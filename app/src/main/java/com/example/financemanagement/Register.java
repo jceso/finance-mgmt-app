@@ -106,40 +106,31 @@ public class Register extends AppCompatActivity {
                     Map<String, Object> balances = new HashMap<>();
                     balances.put("cash", 0);
                     balances.put("credit_card", 0);
+                    balances.put("save_perc", 15);
                     userInfo.put("Balances", balances);
 
+                    // Define categories (directly in the user document)
+                    Map<String, Object> categories = new HashMap<>();
+                    // EXPENSES
+                    categories.put("Cibo", createCategory("icc_food", "expense", true));
+                    categories.put("Casa", createCategory("icc_home", "expense", false));
+                    categories.put("Sport", createCategory("icc_sport", "expense", false));
+                    categories.put("Benessere", createCategory("icc_wellness", "expense", false));
+                    categories.put("Vestiti", createCategory("icc_clothes", "expense", false));
+                    categories.put("Trasporti", createCategory("icc_transport", "expense", false));
+                    categories.put("Iscrizioni", createCategory("icc_subscriptions", "expense", false));
+                    categories.put("Cibo fuori casa", createCategory("icc_out_of_home", "expense", true));
+                    categories.put("Svago", createCategory("icc_entertainment", "expense", true));
+                    // INCOMES
+                    categories.put("Stipendio", createCategory("icc_job", "income", true));
+                    categories.put("Regalo", createCategory("icc_giftcard", "income", false));
+                    categories.put("Prestito", createCategory("icc_handshake", "income", true));
+
+                    // Add categories to the user info and save to Firestore
+                    userInfo.put("categories", categories);
                     dr.set(userInfo)
-                            .addOnSuccessListener(aVoid -> Log.d("UserCreation", "User and balances saved successfully"))
-                            .addOnFailureListener(e -> Log.e("UserCreation", "Error saving user and balances", e));
-
-                    // Define default EXPENSES and INCOME array
-                    List<Map<String, Object>> expensesCategories = new ArrayList<>();
-                    expensesCategories.add(createCategory("Food", "ic_food"));
-                    expensesCategories.add(createCategory("Home", "ic_home"));
-                    expensesCategories.add(createCategory("Sport", "ic_sport"));
-                    expensesCategories.add(createCategory("Wellness", "ic_wellness"));
-                    expensesCategories.add(createCategory("Clothes", "ic_clothes"));
-                    expensesCategories.add(createCategory("Transportation", "ic_transport"));
-                    expensesCategories.add(createCategory("Subscriptions", "ic_subscriptions"));
-                    expensesCategories.add(createCategory("Cibo fuori casa", "ic_out_of_home"));
-                    expensesCategories.add(createCategory("Svago", "ic_entertainment"));
-
-                    List<Map<String, Object>> incomesCategories = new ArrayList<>();
-                    incomesCategories.add(createCategory("Stipendio", "ic_job"));
-                    incomesCategories.add(createCategory("Regalo", "ic_giftcard"));
-                    incomesCategories.add(createCategory("Loan", "ic_handshake"));
-
-                    // Save "Categories" collection
-                    Map<String, Object> expensesMap = new HashMap<>();
-                    expensesMap.put("categories", expensesCategories);
-                    Map<String, Object> incomesMap = new HashMap<>();
-                    incomesMap.put("categories", incomesCategories);
-                    dr.collection("Categories").document("expenses").set(expensesMap)
-                        .addOnSuccessListener(aVoid -> Log.d("UserCreation", "Expenses categories saved successfully"))
-                        .addOnFailureListener(e -> Log.e("UserCreation", "Error during expenses categories saving", e));
-                    dr.collection("Categories").document("incomes").set(incomesMap)
-                        .addOnSuccessListener(aVoid -> Log.d("UserCreation", "Incomes categories saved successfully"))
-                        .addOnFailureListener(e -> Log.e("UserCreation", "Error during incomes categories saving", e));
+                            .addOnSuccessListener(aVoid -> Log.d("UserCreation", "User and categories saved successfully"))
+                            .addOnFailureListener(e -> Log.e("UserCreation", "Error saving user and categories", e));
 
                     Log.w("UserCreation", "Account created correctly", task.getException());
                     Toast.makeText(Register.this, "Account created!", Toast.LENGTH_SHORT).show();
@@ -154,10 +145,11 @@ public class Register extends AppCompatActivity {
         });
     }
 
-    private static Map<String, Object> createCategory(String name, String icon) {
+    private static Map<String, Object> createCategory(String icon, String type, boolean fav) {
         Map<String, Object> category = new HashMap<>();
-        category.put("name", name);
         category.put("icon", icon);
+        category.put("type", type);
+        category.put("fav", fav);
         return category;
     }
 }

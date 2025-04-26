@@ -28,6 +28,7 @@ import androidx.core.view.WindowInsetsCompat;
 import com.example.financemanagement.models.CommonFeatures;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
@@ -86,6 +87,11 @@ public class Settings extends AppCompatActivity {
                 setAppTheme(isChecked, Settings.this);
                 recreate();
             }
+        });
+
+        Button expCatBtn = findViewById(R.id.exp_categories);
+        expCatBtn.setOnClickListener(v -> {
+            showCategoriesDialog("expense");
         });
 
 
@@ -152,25 +158,39 @@ public class Settings extends AppCompatActivity {
         });
     }
 
-    private void showCategoriesDialog() {
+    private void showCategoriesDialog(String type) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Categories");
+        builder.setTitle(type.equals("expense") ? "Expense Categories" : "Income Categories");
 
         ListView listView = new ListView(this);
+        categoryList = new ArrayList<>();
         adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, categoryList);
         listView.setAdapter(adapter);
 
         builder.setView(listView);
         builder.setPositiveButton("Close", (dialog, which) -> dialog.dismiss());
 
-        fetchCategories();
+        fetchCategories(type, adapter);
+
         builder.create().show();
     }
 
-    private void fetchCategories() {
-        db.collection("Users").document(user.getUid())
-            .collection("Categories").get().addOnCompleteListener(task -> {
+    private void fetchCategories(String type, ArrayAdapter<String> adapter) {
+        categoryList.clear(); // pulisci la lista
 
-        });
+        db.collection("Users").document(user.getUid())
+                .collection("Categories")
+                .whereEqualTo("type", type)
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    for (DocumentSnapshot doc : queryDocumentSnapshots) {
+                        String name = doc.getString("name");
+                        if (name != null) categoryList.add(name);
+                    }
+                    adapter.notifyDataSetChanged();
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(Settings.this, "Failed to load categories", Toast.LENGTH_SHORT).show();
+                });
     }
 }

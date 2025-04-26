@@ -9,8 +9,10 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.activity.OnBackPressedCallback;
+import androidx.viewpager2.widget.ViewPager2;
 
 import com.example.financemanagement.models.CommonFeatures;
+import com.example.financemanagement.models.charts.ChartPagerAdapter;
 import com.github.mikephil.charting.charts.PieChart;
 import com.github.mikephil.charting.data.PieData;
 import com.github.mikephil.charting.data.PieDataSet;
@@ -18,8 +20,13 @@ import com.github.mikephil.charting.data.PieEntry;
 import com.github.mikephil.charting.utils.ColorTemplate;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import android.util.Log;
@@ -29,7 +36,11 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import me.relex.circleindicator.CircleIndicator3;
+
 public class Home extends AppCompatActivity {
+    private FirebaseFirestore fStore;
+    private String userId;
     private long lastBackPressedTime = 0;
     private Toast backToast;
 
@@ -62,30 +73,32 @@ public class Home extends AppCompatActivity {
             }
         });
 
-        PieChart pieChart = findViewById(R.id.chart);
-        ArrayList<PieEntry> entiers = new ArrayList<>();
+        fStore = FirebaseFirestore.getInstance();
+        userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
-        entiers.add(new PieEntry(80f, "Maths"));
-        entiers.add(new PieEntry(90f, "Science"));
-        entiers.add(new PieEntry(75f, "English"));
-        entiers.add(new PieEntry(60f, "IT"));
+        // Initialize the ViewPager2
+        ViewPager2 viewPager = findViewById(R.id.view_pager);
+        if (viewPager == null)
+            Log.e("MainActivity", "ViewPager2 is null. Check the layout.");
+        else {
+            ChartPagerAdapter adapter = new ChartPagerAdapter(this);
+            viewPager.setAdapter(adapter);
+        }
+        // Initialize the CircleIndicator3
+        CircleIndicator3 circleIndicator = findViewById(R.id.circle_indicator);
+        if (circleIndicator == null)
+            Log.e("MainActivity", "CircleIndicator3 is null. Check the layout.");
+        else
+            circleIndicator.setViewPager(viewPager);
+
+        moneySetting();
 
         // Cibo, Casa, Sport, Benessere, Vestiti, Trasporti, Abbonamenti, Cibo fuori casa, Svago
         // Da mantenere tra i preferiti Cibo-CiboFuoriCasa-Svago
 
-        // 50% Spese fisse - Casa, Cibo, Trasporti
+        // 55% Spese fisse - Casa, Cibo, Trasporti
         // 30% Spese variabili - Aperitivi, Cibo fuori casa
-        // 20% Risparmio o Emergenze
-
-        PieDataSet pieDataSet = new PieDataSet(entiers, "Subjects");
-        pieDataSet.setColors(ColorTemplate.MATERIAL_COLORS);
-
-        PieData pieData = new PieData(pieDataSet);
-        pieChart.setData(pieData);
-        pieChart.getDescription().setEnabled(false);
-        pieChart.setCenterText("Favorite Expenses");
-        pieChart.animateY(1000);
-        pieChart.invalidate();
+        // 15% Risparmio o Emergenze
 
         ImageView avatar = findViewById(R.id.avatar);
         ImageView settings = findViewById(R.id.settings);
@@ -99,8 +112,6 @@ public class Home extends AppCompatActivity {
             startActivity(new Intent(Home.this, Savings.class));
             finish();
         });
-
-        moneySetting();
 
         settings.setOnClickListener(v -> {
             startActivity(new Intent(Home.this, Settings.class));
@@ -123,16 +134,16 @@ public class Home extends AppCompatActivity {
     }
 
     private void moneySetting() {
-        FirebaseAuth fAuth = FirebaseAuth.getInstance();
-        FirebaseFirestore fStore = FirebaseFirestore.getInstance();
-
         TextView cardMoney = findViewById(R.id.card_money);
         TextView cashMoney = findViewById(R.id.cash_money);
+        TextView loanMoney = findViewById(R.id.loan_money);
+        TextView salaryMoney = findViewById(R.id.salary_money);
 
-        // Recupera il documento dell'utente
-        fStore.collection("Users").document(fAuth.getCurrentUser().getUid()).get()
+        // Retrieve user infos
+        fStore.collection("Users").document(userId).get()
             .addOnSuccessListener(documentSnapshot -> {
                 if (documentSnapshot.exists()) {
+                    // Retrieve balances
                     Object balancesObj = documentSnapshot.get("Balances");
 
                     if (balancesObj instanceof Map) {
@@ -164,10 +175,80 @@ public class Home extends AppCompatActivity {
                         cardMoney.setText("€0");
                         cashMoney.setText("€0");
                     }
+
+                    // Retrieve incomes
                 }
             }).addOnFailureListener(e -> {
                 cardMoney.setText("Errore");
                 cashMoney.setText("Errore");
+        });
+    }
+
+    private void pieChartSetting() {
+        PieChart pieChart = findViewById(R.id.chart);
+        Calendar calendar = Calendar.getInstance();
+
+        // FIRST DAY OF CURRENT MONTH
+        calendar.set(Calendar.DAY_OF_MONTH, 1);
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+        long startOfMonth = calendar.getTimeInMillis();
+        // LAST DAY OF CURRENT MONTH
+        calendar.set(Calendar.DAY_OF_MONTH, calendar.getActualMaximum(Calendar.DAY_OF_MONTH));
+        calendar.set(Calendar.HOUR_OF_DAY, 23);
+        calendar.set(Calendar.MINUTE, 59);
+        calendar.set(Calendar.SECOND, 59);
+        calendar.set(Calendar.MILLISECOND, 999);
+        long endOfMonth = calendar.getTimeInMillis();
+
+        Log.d("PieChart Debug", "Start of month: " + startOfMonth + " || End of month: " + endOfMonth);
+
+        fStore.collection("Users").document(userId).get().addOnSuccessListener(userDoc -> {
+            if (!userDoc.exists()) return;
+
+            // Get favorite categories
+            Map<String, Object> categories = (Map<String, Object>) userDoc.get("categories");
+            List<String> favoriteCategories = new ArrayList<>();
+            for (Map.Entry<String, Object> entry : categories.entrySet()) {
+                Map<String, Object> category = (Map<String, Object>) entry.getValue();
+                if (Boolean.TRUE.equals(category.get("fav")) && "expense".equals(category.get("type")))
+                    favoriteCategories.add(entry.getKey());
+            }
+
+            // Fetch all expense transactions for the current month
+            fStore.collection("Users").document(userId).collection("Transactions")
+                .whereGreaterThanOrEqualTo("date", startOfMonth).whereLessThanOrEqualTo("date", endOfMonth)
+                .get().addOnSuccessListener(querySnapshot -> {
+                    Map<String, Float> categorySums = new HashMap<>();
+
+                    for (QueryDocumentSnapshot doc : querySnapshot) {
+                        String type = doc.getString("type");
+                        String category = doc.getString("category");
+                        Number amount = doc.getDouble("amount");
+
+                        if ("expense".equals(type) && favoriteCategories.contains(category) && amount != null)
+                            categorySums.put(category, categorySums.getOrDefault(category, 0f) + amount.floatValue());
+                        Log.d("PieChart Debug", "Category: " + category + ", Amount: " + amount + " | Category sums: " +categorySums);
+                    }
+
+                    // Build PieChart entries
+                    ArrayList<PieEntry> entries = new ArrayList<>();
+                    for (Map.Entry<String, Float> entry : categorySums.entrySet()) {
+                        entries.add(new PieEntry(entry.getValue(), entry.getKey()));
+                    }
+
+                    PieDataSet dataSet = new PieDataSet(entries, null);
+                    dataSet.setColors(ColorTemplate.MATERIAL_COLORS);
+
+                    pieChart.setData(new PieData(dataSet));
+                    pieChart.getDescription().setEnabled(false);
+                    pieChart.getLegend().setEnabled(false);
+                    pieChart.setCenterText("Favourite Expenses");
+                    pieChart.animateY(1000);
+                    pieChart.invalidate();
+            });
         });
     }
 }

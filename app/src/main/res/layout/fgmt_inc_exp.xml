@@ -78,7 +78,7 @@
             android:drawableLeft="@drawable/date"
             android:text="Date"
             android:textSize="20sp"
-            android:fontFamily="@font/hornbill_black"
+            android:fontFamily="@font/hornbill_blk_edited"
             android:gravity="center|center_vertical"
             style="@style/Button"
             android:layout_weight="1"/>
@@ -96,7 +96,7 @@
             android:drawableEnd="@drawable/time"
             android:text="Time"
             android:textSize="20sp"
-            android:fontFamily="@font/hornbill_black"
+            android:fontFamily="@font/hornbill_blk_edited"
             android:gravity="center|center_vertical"
             style="@style/SecButton"
             android:layout_weight="1"/>
