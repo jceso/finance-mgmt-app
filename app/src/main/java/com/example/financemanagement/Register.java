@@ -7,6 +7,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.app.DatePickerDialog;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -22,6 +23,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -72,33 +74,30 @@ public class Register extends AppCompatActivity {
         });
 
         reg_btn.setOnClickListener(v -> {
-            String name, email, password;
-            name = nameInput.getText().toString().trim();
-            email = emailInput.getText().toString().trim();
-            password = passwordInput.getText().toString().trim();
+            String name = nameInput.getText().toString().trim();
+            String email = emailInput.getText().toString().trim();
+            String password = passwordInput.getText().toString().trim();
 
             if (name.isEmpty()) {
                 nameInput.setError("Name is required");
                 return;
-            } else
-                nameInput.setError(null);
+            } else nameInput.setError(null);
 
             if (email.isEmpty() || !email.matches("[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}")) {
                 emailInput.setError("Invalid email format");
                 return;
-            } else
-                emailInput.setError(null);
+            } else emailInput.setError(null);
 
             if (password.isEmpty() || !password.matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$")) {
                 passwordInput.setError("At least 8 characters, one capital letter, one number and one special character");
                 return;
-            } else
-                passwordInput.setError(null);
+            } else passwordInput.setError(null);
 
-            // Ask for cash balance first
-            askInitialBalance("cash", cashValue -> {
-                askInitialBalance("credit card", creditValue -> {
-                    // Now create the account with user input and the two balances
+            // Ask cash balance
+            askInitialBalance("cash", (cashValue, cashDate) -> {
+                // Ask credit balance
+                askInitialBalance("credit card", (creditValue, creditDate) -> {
+
                     fAuth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(task -> {
                         if (task.isSuccessful()) {
                             FirebaseUser user = fAuth.getCurrentUser();
@@ -113,12 +112,12 @@ public class Register extends AppCompatActivity {
 
                             Map<String, Object> cashBalance = new HashMap<>();
                             cashBalance.put("value", cashValue);
-                            cashBalance.put("date", new java.util.Date());
+                            cashBalance.put("date", cashDate);
                             balances.put("cash", cashBalance);
 
                             Map<String, Object> creditCardBalance = new HashMap<>();
                             creditCardBalance.put("value", creditValue);
-                            creditCardBalance.put("date", new java.util.Date());
+                            creditCardBalance.put("date", creditDate);
                             balances.put("credit_card", creditCardBalance);
 
                             userInfo.put("Balances", balances);
@@ -152,6 +151,7 @@ public class Register extends AppCompatActivity {
                             Toast.makeText(Register.this, "Authentication failed!", Toast.LENGTH_SHORT).show();
                         }
                     });
+
                 });
             });
         });
@@ -165,7 +165,7 @@ public class Register extends AppCompatActivity {
         return category;
     }
 
-    private void askInitialBalance(String type, final java.util.function.Consumer<Double> callback) {
+    private void askInitialBalance(String type, final java.util.function.BiConsumer<Double, java.util.Date> callback) {
         EditText input = new EditText(this);
         input.setInputType(android.text.InputType.TYPE_CLASS_NUMBER | android.text.InputType.TYPE_NUMBER_FLAG_DECIMAL);
         input.setHint("0.0");
@@ -175,19 +175,36 @@ public class Register extends AppCompatActivity {
                 .setMessage("Enter your initial " + type + " balance:")
                 .setView(input)
                 .setCancelable(false)
-                .setPositiveButton("Set", (dialog, which) -> {
+                .setPositiveButton("Next", (dialog, which) -> {
                     String valueStr = input.getText().toString().trim();
                     try {
                         double value = Double.parseDouble(valueStr);
                         if (value < 0) throw new NumberFormatException();
-                        callback.accept(value);
+
+                        // Show date picker after balance input
+                        final Calendar calendar = Calendar.getInstance();
+                        DatePickerDialog datePickerDialog = new DatePickerDialog(this,
+                                (view, year, month, dayOfMonth) -> {
+                                    calendar.set(Calendar.YEAR, year);
+                                    calendar.set(Calendar.MONTH, month);
+                                    calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+                                    callback.accept(value, calendar.getTime());
+                                },
+                                calendar.get(Calendar.YEAR),
+                                calendar.get(Calendar.MONTH),
+                                calendar.get(Calendar.DAY_OF_MONTH)
+                        );
+                        datePickerDialog.setCancelable(false);
+                        datePickerDialog.show();
+
                     } catch (NumberFormatException e) {
                         Toast.makeText(this, "Please enter a valid positive number", Toast.LENGTH_SHORT).show();
                         askInitialBalance(type, callback); // Retry
                     }
                 })
-                .setNegativeButton("Cancel", (dialog, which) -> callback.accept(0.0)) // Default to 0.0
+                .setNegativeButton("Cancel", (dialog, which) -> {
+                    callback.accept(0.0, new java.util.Date()); // fallback to now
+                })
                 .show();
     }
-
 }
