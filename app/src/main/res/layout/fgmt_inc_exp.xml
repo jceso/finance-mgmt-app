@@ -150,71 +150,20 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="60dp"
-        android:layout_marginBottom="40dp"
+        android:layout_marginBottom="8dp"
         android:clickable="true"
         android:drawableEnd="@drawable/circle"
         android:focusable="true"
         android:fontFamily="@font/hornbill_black"
         android:padding="10dp"
         android:paddingHorizontal="5dp"
-        android:text="Repeated"
+        android:text="Not repeated"
         android:textColor="@color/dark_bg"
-        android:textSize="25sp"
+        android:textSize="18sp"
         android:textStyle="bold"
         app:layout_constraintBottom_toTopOf="@+id/inc_exp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/card_cashLayout" />
-
-    <!--
-    <LinearLayout
-        android:id="@+id/repeat_layout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="15dp"
-        android:layout_marginHorizontal="60dp"
-        android:layout_marginBottom="40dp"
-        android:background="@color/secondary"
-        android:orientation="vertical"
-        android:paddingHorizontal="5dp"
-        app:layout_constraintTop_toBottomOf="@id/card_cashLayout"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" >
-
-        <RadioGroup
-            android:id="@+id/repeat_radio_group"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="5dp"
-            android:visibility="gone">
-
-            <RadioButton
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:fontFamily="@font/be_bold"
-                android:text="No"
-                android:textColor="@color/dark_bg"
-                android:textSize="18sp" />
-
-            <RadioButton
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:fontFamily="@font/be_bold"
-                android:text="Every week"
-                android:textColor="@color/dark_bg"
-                android:textSize="18sp" />
-
-            <RadioButton
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:fontFamily="@font/be_bold"
-                android:text="Every month"
-                android:textColor="@color/dark_bg"
-                android:textSize="18sp" />
-        </RadioGroup>
-    </LinearLayout>
-
-    -->
+        app:layout_constraintStart_toStartOf="parent" />
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/inc_exp"

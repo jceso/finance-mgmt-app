@@ -184,15 +184,19 @@ public class ViewPagerAdapter extends FragmentStateAdapter {
         spinnerSetup(category_spinner, isExpense, context);
         dateDialog(date_btn, time_btn, LocalDateTime.now(), context);
         repeat.setOnClickListener(v -> {
-            /*
-            if (repeatRadioGroup.getVisibility() == View.GONE) {
-                repeatRadioGroup.setVisibility(View.VISIBLE);
-                repeatText.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.check, 0);
-            } else {
-                repeatRadioGroup.setVisibility(View.GONE);
-                repeatText.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.circle, 0);
-            }
-            */
+            String[] repeatOptions = {"Not repeated", "Daily", "Weekly", "Monthly", "Yearly"};
+
+            new androidx.appcompat.app.AlertDialog.Builder(context)
+                .setTitle("Repeat transaction")
+                .setItems(repeatOptions, (dialog, which) -> {
+                    String selectedOption = repeatOptions[which];
+                    repeat.setText(selectedOption);
+
+                    if (!selectedOption.equalsIgnoreCase("Not repeated"))
+                        repeat.setCompoundDrawablesWithIntrinsicBounds(0,0, R.drawable.check, 0);
+                    else
+                        repeat.setCompoundDrawablesWithIntrinsicBounds(0,0, R.drawable.circle, 0);
+            }).show();
         });
 
         save_btn.setOnClickListener(v -> {
