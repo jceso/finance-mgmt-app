@@ -53,7 +53,7 @@ public class CategoryAdapter extends ArrayAdapter<Category> {
         if (iconResId != 0)
             iconView.setImageResource(iconResId);
         else    // Fallback icon
-            iconView.setImageResource(R.drawable.icc_category);
+            iconView.setImageResource(R.drawable.category_general);
 
         nameView.setText(category.getName());
 
@@ -63,18 +63,18 @@ public class CategoryAdapter extends ArrayAdapter<Category> {
     private int getIconResourceId(String iconName) {
         // Use reflection or a conditional block to return the correct icon resource ID
         switch (iconName) {
-            case "icc_food": return R.drawable.icc_food;
-            case "icc_home": return R.drawable.icc_home;
-            case "icc_sport": return R.drawable.icc_sport;
-            case "icc_wellness": return R.drawable.icc_wellness;
-            case "icc_clothes": return R.drawable.icc_clothes;
-            case "icc_transport": return R.drawable.icc_transport;
-            case "icc_subscriptions": return R.drawable.icc_subscriptions;
-            case "icc_out_of_home": return R.drawable.icc_outside;
-            case "icc_entertainment": return R.drawable.icc_entertainment;
-            case "icc_job": return R.drawable.icc_job;
-            case "icc_giftcard": return R.drawable.icc_giftcard;
-            case "icc_handshake": return R.drawable.icc_handshake;
+            case "icc_food": return R.drawable.category_food;
+            case "icc_home": return R.drawable.category_home;
+            case "icc_sport": return R.drawable.category_sport;
+            case "icc_wellness": return R.drawable.category_wellness;
+            case "icc_clothes": return R.drawable.category_clothes;
+            case "icc_transport": return R.drawable.category_transport;
+            case "icc_subscriptions": return R.drawable.category_subscriptions;
+            case "icc_out_of_home": return R.drawable.category_outside;
+            case "icc_entertainment": return R.drawable.category_entertainment;
+            case "icc_job": return R.drawable.category_job;
+            case "icc_giftcard": return R.drawable.category_giftcard;
+            case "icc_handshake": return R.drawable.category_handshake;
             default: return 0;  // No icon found, return default icon
         }
     }

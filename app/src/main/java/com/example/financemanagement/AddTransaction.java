@@ -30,6 +30,7 @@ public class AddTransaction extends AppCompatActivity {
             return insets;
         });
         CommonFeatures.initialSettings(this);
+        CommonFeatures.setBackToHome(this, this, getOnBackPressedDispatcher());
 
         // Setting tabs
         tabLayout = findViewById(R.id.tabLayout);

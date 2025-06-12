@@ -25,12 +25,13 @@
         <androidx.viewpager2.widget.ViewPager2
             android:id="@+id/view_pager"
             android:layout_width="match_parent"
-            android:layout_height="166dp" />
+            android:layout_height="0dp"
+            android:layout_weight="1" />
 
         <me.relex.circleindicator.CircleIndicator3
             android:id="@+id/circle_indicator"
             android:layout_width="match_parent"
-            android:layout_height="20dp"
+            android:layout_height="wrap_content"
             app:ci_drawable="@drawable/bg_indicator"/>
 
     </LinearLayout>

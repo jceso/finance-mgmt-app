@@ -193,9 +193,9 @@ public class ViewPagerAdapter extends FragmentStateAdapter {
                     repeat.setText(selectedOption);
 
                     if (!selectedOption.equalsIgnoreCase("Not repeated"))
-                        repeat.setCompoundDrawablesWithIntrinsicBounds(0,0, R.drawable.check, 0);
+                        repeat.setCompoundDrawablesWithIntrinsicBounds(0,0, R.drawable.ic_check, 0);
                     else
-                        repeat.setCompoundDrawablesWithIntrinsicBounds(0,0, R.drawable.circle, 0);
+                        repeat.setCompoundDrawablesWithIntrinsicBounds(0,0, R.drawable.ic_circle, 0);
             }).show();
         });
 

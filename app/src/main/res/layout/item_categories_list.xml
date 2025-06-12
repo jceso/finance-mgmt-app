@@ -19,7 +19,7 @@
             android:layout_height="match_parent"
             android:layout_alignParentStart="true"
             android:padding="7dp"
-            android:src="@drawable/icc_handshake"
+            android:src="@drawable/category_handshake"
             app:tint="@color/primary" />
 
         <TextView
@@ -41,7 +41,7 @@
             android:layout_height="match_parent"
             android:layout_alignParentEnd="true"
             android:padding="7dp"
-            android:src="@drawable/fav_empty" />
+            android:src="@drawable/ic_fav_empty" />
 
     </RelativeLayout>
 

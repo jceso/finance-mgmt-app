@@ -108,6 +108,11 @@ public class Register extends AppCompatActivity {
                         Map<String, Object> balances = new HashMap<>();
                         balances.put("save_perc", 15);
 
+                        Map<String, Object> fixedIncome = new HashMap<>();
+                        fixedIncome.put("save_perc", 15);
+                        fixedIncome.put("monthly_income", 0);
+                        balances.put("fixed_income", fixedIncome);
+
                         Map<String, Object> cashBalance = new HashMap<>();
                         cashBalance.put("value", cashValue);
                         cashBalance.put("date", cashDate);
@@ -167,29 +172,27 @@ public class Register extends AppCompatActivity {
         input.setHint("0.0");
 
         new androidx.appcompat.app.AlertDialog.Builder(this)
-                .setTitle("Initial " + type + " balance")
-                .setMessage("Enter your initial " + type + " balance:")
-                .setView(input)
-                .setCancelable(false)
-                .setPositiveButton("Next", (dialog, which) -> {
-                    String valueStr = input.getText().toString().trim();
-                    try {
-                        double value = Double.parseDouble(valueStr);
-                        if (value < 0) throw new NumberFormatException();
+            .setTitle("Initial " + type + " balance")
+            .setMessage("Enter your initial " + type + " balance:")
+            .setView(input)
+            .setCancelable(false)
+            .setPositiveButton("Next", (dialog, which) -> {
+                String valueStr = input.getText().toString().trim();
+                try {
+                    double value = Double.parseDouble(valueStr);
+                    if (value < 0) throw new NumberFormatException();
 
-                        // Show date picker after balance input
-                        DatePickerDialog datePickerDialog = getDatePickerDialog(callback, value);
-                        datePickerDialog.show();
+                    // Show date picker after balance input
+                    DatePickerDialog datePickerDialog = getDatePickerDialog(callback, value);
+                    datePickerDialog.show();
 
-                    } catch (NumberFormatException e) {
-                        Toast.makeText(this, "Please enter a valid positive number", Toast.LENGTH_SHORT).show();
-                        askInitialBalance(type, callback); // Retry
-                    }
-                })
-                .setNegativeButton("Cancel", (dialog, which) -> {
-                    callback.accept(0.0, new java.util.Date()); // fallback to now
-                })
-                .show();
+                } catch (NumberFormatException e) {
+                    Toast.makeText(this, "Please enter a valid positive number", Toast.LENGTH_SHORT).show();
+                    askInitialBalance(type, callback); // Retry
+                }
+            }).setNegativeButton("Cancel", (dialog, which) -> {
+                callback.accept(0.0, new java.util.Date()); // fallback to now
+            }).show();
     }
 
     private @NonNull DatePickerDialog getDatePickerDialog(BiConsumer<Double, Date> callback, double value) {

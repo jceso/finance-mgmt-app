@@ -32,6 +32,7 @@ import me.relex.circleindicator.CircleIndicator3;
 public class Home extends AppCompatActivity {
     private FirebaseFirestore fStore;
     private String userId;
+    private TextView cardMoney, cashMoney;
     private long lastBackPressedTime = 0;
     private Toast backToast;
 
@@ -102,6 +103,22 @@ public class Home extends AppCompatActivity {
             finish();
         });
 
+        cardMoney = findViewById(R.id.card_money);
+        cardMoney.setOnClickListener(v -> {
+            Intent intentCc = new Intent(Home.this, TransactionsShow.class);
+            intentCc.putExtra("type", "credit_card");
+            startActivity(intentCc);
+            finish();
+        });
+
+        cashMoney = findViewById(R.id.cash_money);
+        cashMoney.setOnClickListener(v -> {
+            Intent intentCash = new Intent(Home.this, TransactionsShow.class);
+            intentCash.putExtra("type", "cash");
+            startActivity(intentCash);
+            finish();
+        });
+
         settings.setOnClickListener(v -> {
             startActivity(new Intent(Home.this, Settings.class));
             finish();
@@ -123,8 +140,6 @@ public class Home extends AppCompatActivity {
     }
 
     private void moneySetting() {
-        TextView cardMoney = findViewById(R.id.card_money);
-        TextView cashMoney = findViewById(R.id.cash_money);
         TextView loanMoney = findViewById(R.id.loan_money);
         TextView salaryMoney = findViewById(R.id.salary_money);
 

@@ -59,7 +59,7 @@
         android:autoSizeMinTextSize="20sp"
         android:autoSizeMaxTextSize="60sp"
         android:autoSizeStepGranularity="2sp"
-        app:drawableStartCompat="@drawable/credit_card"
+        app:drawableStartCompat="@drawable/ic_credit_card"
         app:layout_constraintStart_toEndOf="@+id/summary"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -144,7 +144,7 @@
             android:layout_height="wrap_content"
             android:paddingVertical="10dp"
             android:paddingHorizontal="15dp"
-            android:drawableStart="@drawable/icc_handshake"
+            android:drawableStart="@drawable/category_handshake"
             android:drawablePadding="10dp"
             android:drawableTint="@color/secondary_light"
             android:text="Prestito"
@@ -164,7 +164,7 @@
             android:layout_height="wrap_content"
             android:paddingVertical="10dp"
             android:paddingHorizontal="15dp"
-            android:drawableStart="@drawable/icc_job"
+            android:drawableStart="@drawable/category_job"
             android:drawablePadding="10dp"
             android:drawableTint="@color/secondary_light"
             android:text="Stipendio"
@@ -208,7 +208,7 @@
             android:layout_height="match_parent"
             android:layout_marginVertical="5dp"
             android:layout_weight="1"
-            android:background="@drawable/income_button"
+            android:background="@drawable/btn_income"
             android:fontFamily="@font/insanibu"
             android:text="Entrate"
             android:textSize="35dp" />
@@ -223,7 +223,7 @@
             android:layout_height="match_parent"
             android:layout_marginVertical="5dp"
             android:layout_weight="1"
-            android:background="@drawable/expense_button"
+            android:background="@drawable/btn_expense"
             android:fontFamily="@font/insanibu"
             android:text="Uscite"
             android:textSize="35dp" />

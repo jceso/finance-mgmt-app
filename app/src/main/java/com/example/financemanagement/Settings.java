@@ -63,6 +63,7 @@ public class Settings extends AppCompatActivity {
             return insets;
         });
         CommonFeatures.setBackToHome(this, this, getOnBackPressedDispatcher());
+        CommonFeatures.setBackToHome(this, this, getOnBackPressedDispatcher());
         user = FirebaseAuth.getInstance().getCurrentUser();
         db = FirebaseFirestore.getInstance();
 

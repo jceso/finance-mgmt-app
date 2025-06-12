@@ -26,5 +26,6 @@ public class Savings extends AppCompatActivity {
         });
 
         CommonFeatures.initialSettings(this);
+        CommonFeatures.setBackToHome(this, this, getOnBackPressedDispatcher());
     }
 }

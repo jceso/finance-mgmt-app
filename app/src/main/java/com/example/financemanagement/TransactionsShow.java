@@ -20,6 +20,7 @@ import androidx.viewpager2.widget.ViewPager2;
 
 import com.example.financemanagement.models.Category;
 import com.example.financemanagement.models.CategoryAdapter;
+import com.example.financemanagement.models.CommonFeatures;
 import com.example.financemanagement.models.charts.ChartPagerAdapter;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -46,6 +47,10 @@ public class TransactionsShow extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+        CommonFeatures.initialSettings(this);
+        CommonFeatures.setBackToHome(this, this, getOnBackPressedDispatcher());
+        // Get the type of transactions to show
+        String transactionsType = getIntent().getStringExtra("type");
 
         // Initialize the ViewPager2
         ViewPager2 viewPager = findViewById(R.id.view_pager);
@@ -61,7 +66,6 @@ public class TransactionsShow extends AppCompatActivity {
             Log.e("MainActivity", "CircleIndicator3 is null. Check the layout.");
         else
             circleIndicator.setViewPager(viewPager);
-
 
         transactionSearch(this, this);
     }

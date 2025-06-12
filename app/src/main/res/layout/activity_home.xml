@@ -17,49 +17,53 @@
     <!-- CASH -->
     <TextView
         android:id="@+id/cash_money"
-        android:layout_width="235dp"
+        android:layout_width="0dp"
         android:layout_height="60dp"
         android:layout_marginStart="-30dp"
         android:layout_marginTop="-3dp"
-        android:paddingStart="35dp"
-        android:paddingTop="3dp"
-        android:paddingEnd="4dp"
+        android:layout_marginEnd="50dp"
+        android:autoSizeMaxTextSize="45sp"
+        android:autoSizeMinTextSize="15sp"
+        android:autoSizeStepGranularity="2sp"
+        android:autoSizeTextType="uniform"
+        android:background="@drawable/rounded_cash"
         android:drawablePadding="7dp"
-        android:text="@string/amount_money"
-        android:textColor="@color/grey_dark"
         android:fontFamily="@font/cs_boline_edited"
         android:gravity="center_vertical"
-        android:autoSizeTextType="uniform"
-        android:autoSizeMinTextSize="15sp"
-        android:autoSizeMaxTextSize="45sp"
-        android:autoSizeStepGranularity="2sp"
+        android:paddingStart="35dp"
+        android:paddingTop="3dp"
+        android:paddingEnd="8dp"
+        android:text="@string/amount_money"
+        android:textColor="@color/grey_dark"
         app:drawableStartCompat="@drawable/ic_cash"
         app:drawableTint="@color/grey_dark"
-        android:background="@drawable/rounded_cash"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/summary"
         app:layout_constraintTop_toBottomOf="@+id/card_money" />
 
     <!-- CARD -->
     <TextView
         android:id="@+id/card_money"
-        android:layout_width="250dp"
+        android:layout_width="0dp"
         android:layout_height="80dp"
         android:layout_marginStart="-30dp"
         android:layout_marginTop="135dp"
-        android:paddingStart="35dp"
-        android:paddingTop="5dp"
-        android:paddingEnd="5dp"
-        android:drawablePadding="7dp"
+        android:layout_marginEnd="10dp"
+        android:autoSizeMaxTextSize="60sp"
+        android:autoSizeMinTextSize="20sp"
+        android:autoSizeStepGranularity="2sp"
+        android:autoSizeTextType="uniform"
         android:background="@drawable/rounded_card"
-        android:text="@string/amount_money"
-        android:textColor="@color/dark_bg"
+        android:drawablePadding="7dp"
         android:fontFamily="@font/cs_boline_edited"
         android:gravity="center_vertical"
-        android:autoSizeTextType="uniform"
-        android:autoSizeMinTextSize="20sp"
-        android:autoSizeMaxTextSize="60sp"
-        android:autoSizeStepGranularity="2sp"
-        app:drawableStartCompat="@drawable/credit_card"
+        android:paddingStart="35dp"
+        android:paddingTop="5dp"
+        android:paddingEnd="10dp"
+        android:text="@string/amount_money"
+        android:textColor="@color/dark_bg"
+        app:drawableStartCompat="@drawable/ic_credit_card"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/summary"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -80,7 +84,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="15dp"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="15dp"
         android:background="@drawable/rounded_grey"
         android:paddingHorizontal="15dp"
         android:paddingVertical="10dp"
@@ -100,29 +104,32 @@
     <!-- Terza slide - Grafico delle spese rispetto al mese/anno scorso (multiple lines chart) -->
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="260dp"
+        android:layout_height="0dp"
+        android:layout_marginVertical="10dp"
         android:layout_marginHorizontal="8dp"
         android:paddingHorizontal="15dp"
         android:paddingVertical="10dp"
-        app:layout_constraintBottom_toTopOf="@+id/monthly_inc"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/info_news"
         android:orientation="vertical"
-        android:background="@drawable/rounded_light">
+        android:background="@drawable/rounded_light"
+        app:layout_constraintTop_toBottomOf="@+id/info_news"
+        app:layout_constraintBottom_toTopOf="@+id/monthly_inc"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
 
         <androidx.viewpager2.widget.ViewPager2
             android:id="@+id/view_pager"
             android:layout_width="match_parent"
-            android:layout_height="220dp" />
+            android:layout_height="0dp"
+            android:layout_weight="1" />
 
         <me.relex.circleindicator.CircleIndicator3
             android:id="@+id/circle_indicator"
             android:layout_width="match_parent"
-            android:layout_height="20dp"
-            app:ci_drawable="@drawable/bg_indicator"/>
+            android:layout_height="wrap_content"
+            app:ci_drawable="@drawable/bg_indicator" />
 
     </LinearLayout>
+
 
     <!-- Soldi mensili di Entrate -->
     <LinearLayout
@@ -130,7 +137,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="15dp"
-        android:layout_marginBottom="10dp"
+        android:layout_marginBottom="8dp"
         android:background="@drawable/rounded_positive"
         android:orientation="horizontal"
         android:paddingHorizontal="10dp"
@@ -144,7 +151,7 @@
             android:layout_height="wrap_content"
             android:paddingVertical="10dp"
             android:paddingHorizontal="15dp"
-            android:drawableStart="@drawable/icc_handshake"
+            android:drawableStart="@drawable/category_handshake"
             android:drawablePadding="10dp"
             android:drawableTint="@color/secondary_light"
             android:text="Prestito"
@@ -164,7 +171,7 @@
             android:layout_height="wrap_content"
             android:paddingVertical="10dp"
             android:paddingHorizontal="15dp"
-            android:drawableStart="@drawable/icc_job"
+            android:drawableStart="@drawable/category_job"
             android:drawablePadding="10dp"
             android:drawableTint="@color/secondary_light"
             android:text="Stipendio"
@@ -208,7 +215,7 @@
             android:layout_height="match_parent"
             android:layout_marginVertical="5dp"
             android:layout_weight="1"
-            android:background="@drawable/income_button"
+            android:background="@drawable/btn_income"
             android:fontFamily="@font/insanibu"
             android:text="Entrate"
             android:textSize="35dp" />
@@ -223,7 +230,7 @@
             android:layout_height="match_parent"
             android:layout_marginVertical="5dp"
             android:layout_weight="1"
-            android:background="@drawable/expense_button"
+            android:background="@drawable/btn_expense"
             android:fontFamily="@font/insanibu"
             android:text="Uscite"
             android:textSize="35dp" />

@@ -22,7 +22,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:contentDescription="@string/settings"
-        android:src="@drawable/settings"
+        android:src="@drawable/ic_settings"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_margin="20dp"/>
