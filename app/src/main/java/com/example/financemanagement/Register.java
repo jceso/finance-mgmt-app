@@ -10,6 +10,7 @@ import android.widget.Toast;
 import android.app.DatePickerDialog;
 
 import androidx.activity.EdgeToEdge;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -21,13 +22,12 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.BiConsumer;
 
 public class Register extends AppCompatActivity {
     EditText nameInput, emailInput, passwordInput;
@@ -96,63 +96,59 @@ public class Register extends AppCompatActivity {
             // Ask cash balance
             askInitialBalance("cash", (cashValue, cashDate) -> {
                 // Ask credit balance
-                askInitialBalance("credit card", (creditValue, creditDate) -> {
+                askInitialBalance("credit card", (creditValue, creditDate) -> fAuth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        FirebaseUser user = fAuth.getCurrentUser();
+                        DocumentReference dr = fStore.collection("Users").document(Objects.requireNonNull(user).getUid());
 
-                    fAuth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(task -> {
-                        if (task.isSuccessful()) {
-                            FirebaseUser user = fAuth.getCurrentUser();
-                            DocumentReference dr = fStore.collection("Users").document(Objects.requireNonNull(user).getUid());
+                        Map<String, Object> userInfo = new HashMap<>();
+                        userInfo.put("name", name);
+                        userInfo.put("email", email);
 
-                            Map<String, Object> userInfo = new HashMap<>();
-                            userInfo.put("name", name);
-                            userInfo.put("email", email);
+                        Map<String, Object> balances = new HashMap<>();
+                        balances.put("save_perc", 15);
 
-                            Map<String, Object> balances = new HashMap<>();
-                            balances.put("save_perc", 15);
+                        Map<String, Object> cashBalance = new HashMap<>();
+                        cashBalance.put("value", cashValue);
+                        cashBalance.put("date", cashDate);
+                        balances.put("cash", cashBalance);
 
-                            Map<String, Object> cashBalance = new HashMap<>();
-                            cashBalance.put("value", cashValue);
-                            cashBalance.put("date", cashDate);
-                            balances.put("cash", cashBalance);
+                        Map<String, Object> creditCardBalance = new HashMap<>();
+                        creditCardBalance.put("value", creditValue);
+                        creditCardBalance.put("date", creditDate);
+                        balances.put("credit_card", creditCardBalance);
 
-                            Map<String, Object> creditCardBalance = new HashMap<>();
-                            creditCardBalance.put("value", creditValue);
-                            creditCardBalance.put("date", creditDate);
-                            balances.put("credit_card", creditCardBalance);
+                        userInfo.put("Balances", balances);
 
-                            userInfo.put("Balances", balances);
+                        Map<String, Object> categories = new HashMap<>();
+                        categories.put("Cibo", createCategory("icc_food", "expense", true));
+                        categories.put("Casa", createCategory("icc_home", "expense", false));
+                        categories.put("Sport", createCategory("icc_sport", "expense", false));
+                        categories.put("Benessere", createCategory("icc_wellness", "expense", false));
+                        categories.put("Vestiti", createCategory("icc_clothes", "expense", false));
+                        categories.put("Trasporti", createCategory("icc_transport", "expense", false));
+                        categories.put("Iscrizioni", createCategory("icc_subscriptions", "expense", false));
+                        categories.put("Cibo fuori casa", createCategory("icc_out_of_home", "expense", true));
+                        categories.put("Svago", createCategory("icc_entertainment", "expense", true));
+                        categories.put("Stipendio", createCategory("icc_job", "income", true));
+                        categories.put("Regalo", createCategory("icc_giftcard", "income", false));
+                        categories.put("Prestito", createCategory("icc_handshake", "income", true));
 
-                            Map<String, Object> categories = new HashMap<>();
-                            categories.put("Cibo", createCategory("icc_food", "expense", true));
-                            categories.put("Casa", createCategory("icc_home", "expense", false));
-                            categories.put("Sport", createCategory("icc_sport", "expense", false));
-                            categories.put("Benessere", createCategory("icc_wellness", "expense", false));
-                            categories.put("Vestiti", createCategory("icc_clothes", "expense", false));
-                            categories.put("Trasporti", createCategory("icc_transport", "expense", false));
-                            categories.put("Iscrizioni", createCategory("icc_subscriptions", "expense", false));
-                            categories.put("Cibo fuori casa", createCategory("icc_out_of_home", "expense", true));
-                            categories.put("Svago", createCategory("icc_entertainment", "expense", true));
-                            categories.put("Stipendio", createCategory("icc_job", "income", true));
-                            categories.put("Regalo", createCategory("icc_giftcard", "income", false));
-                            categories.put("Prestito", createCategory("icc_handshake", "income", true));
+                        userInfo.put("categories", categories);
 
-                            userInfo.put("categories", categories);
+                        dr.set(userInfo)
+                                .addOnFailureListener(e -> Log.e("UserCreation", "Error saving user and categories", e))
+                                .addOnSuccessListener(aVoid -> Log.d("UserCreation", "User and categories saved successfully"));
 
-                            dr.set(userInfo)
-                                    .addOnFailureListener(e -> Log.e("UserCreation", "Error saving user and categories", e))
-                                    .addOnSuccessListener(aVoid -> Log.d("UserCreation", "User and categories saved successfully"));
+                        Toast.makeText(Register.this, "Account created!", Toast.LENGTH_SHORT).show();
+                        startActivity(new Intent(getApplicationContext(), Home.class));
+                        finish();
 
-                            Toast.makeText(Register.this, "Account created!", Toast.LENGTH_SHORT).show();
-                            startActivity(new Intent(getApplicationContext(), Home.class));
-                            finish();
-
-                        } else {
-                            Log.w("UserCreation", "createUserWithEmail:failure", task.getException());
-                            Toast.makeText(Register.this, "Authentication failed!", Toast.LENGTH_SHORT).show();
-                        }
-                    });
-
-                });
+                    } else {
+                        Log.w("UserCreation", "createUserWithEmail:failure", task.getException());
+                        Toast.makeText(Register.this, "Authentication failed!", Toast.LENGTH_SHORT).show();
+                    }
+                }));
             });
         });
     }
@@ -182,19 +178,7 @@ public class Register extends AppCompatActivity {
                         if (value < 0) throw new NumberFormatException();
 
                         // Show date picker after balance input
-                        final Calendar calendar = Calendar.getInstance();
-                        DatePickerDialog datePickerDialog = new DatePickerDialog(this,
-                                (view, year, month, dayOfMonth) -> {
-                                    calendar.set(Calendar.YEAR, year);
-                                    calendar.set(Calendar.MONTH, month);
-                                    calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
-                                    callback.accept(value, calendar.getTime());
-                                },
-                                calendar.get(Calendar.YEAR),
-                                calendar.get(Calendar.MONTH),
-                                calendar.get(Calendar.DAY_OF_MONTH)
-                        );
-                        datePickerDialog.setCancelable(false);
+                        DatePickerDialog datePickerDialog = getDatePickerDialog(callback, value);
                         datePickerDialog.show();
 
                     } catch (NumberFormatException e) {
@@ -206,5 +190,22 @@ public class Register extends AppCompatActivity {
                     callback.accept(0.0, new java.util.Date()); // fallback to now
                 })
                 .show();
+    }
+
+    private @NonNull DatePickerDialog getDatePickerDialog(BiConsumer<Double, Date> callback, double value) {
+        final Calendar calendar = Calendar.getInstance();
+        DatePickerDialog datePickerDialog = new DatePickerDialog(this,
+                (view, year, month, dayOfMonth) -> {
+                    calendar.set(Calendar.YEAR, year);
+                    calendar.set(Calendar.MONTH, month);
+                    calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+                    callback.accept(value, calendar.getTime());
+                },
+                calendar.get(Calendar.YEAR),
+                calendar.get(Calendar.MONTH),
+                calendar.get(Calendar.DAY_OF_MONTH)
+        );
+        datePickerDialog.setCancelable(false);
+        return datePickerDialog;
     }
 }
