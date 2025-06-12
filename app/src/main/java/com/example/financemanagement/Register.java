@@ -95,63 +95,64 @@ public class Register extends AppCompatActivity {
             } else
                 passwordInput.setError(null);
 
-            fAuth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(task -> {
-                if (task.isSuccessful()) {  // Sign in success, update UI with the signed-in user's information
-                    FirebaseUser user = fAuth.getCurrentUser();
-                    DocumentReference dr = fStore.collection("Users").document(Objects.requireNonNull(user).getUid());
+            // Ask for cash balance first
+            askInitialBalance("cash", cashValue -> {
+                askInitialBalance("credit card", creditValue -> {
+                    // Now create the account with user input and the two balances
+                    fAuth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(task -> {
+                        if (task.isSuccessful()) {
+                            FirebaseUser user = fAuth.getCurrentUser();
+                            DocumentReference dr = fStore.collection("Users").document(Objects.requireNonNull(user).getUid());
 
-                    // Save user data
-                    Map<String,Object> userInfo = new HashMap<>();
-                    userInfo.put("name", name);
-                    userInfo.put("email", email);
-                    Map<String, Object> balances = new HashMap<>();
-                    balances.put("save_perc", 15);
+                            Map<String, Object> userInfo = new HashMap<>();
+                            userInfo.put("name", name);
+                            userInfo.put("email", email);
 
-                    // Cash balance
-                    Map<String, Object> cashBalance = new HashMap<>();
-                    cashBalance.put("value", 0.0);
-                    cashBalance.put("date", new java.util.Date());
-                    balances.put("cash", cashBalance);
-                    // Credit balance
-                    Map<String, Object> creditCardBalance = new HashMap<>();
-                    creditCardBalance.put("value", 0.0);
-                    creditCardBalance.put("date", new java.util.Date());
-                    balances.put("credit_card", creditCardBalance);
+                            Map<String, Object> balances = new HashMap<>();
+                            balances.put("save_perc", 15);
 
-                    userInfo.put("Balances", balances);
+                            Map<String, Object> cashBalance = new HashMap<>();
+                            cashBalance.put("value", cashValue);
+                            cashBalance.put("date", new java.util.Date());
+                            balances.put("cash", cashBalance);
 
-                    // Define categories (directly in the user document)
-                    Map<String, Object> categories = new HashMap<>();
-                    // EXPENSES
-                    categories.put("Cibo", createCategory("icc_food", "expense", true));
-                    categories.put("Casa", createCategory("icc_home", "expense", false));
-                    categories.put("Sport", createCategory("icc_sport", "expense", false));
-                    categories.put("Benessere", createCategory("icc_wellness", "expense", false));
-                    categories.put("Vestiti", createCategory("icc_clothes", "expense", false));
-                    categories.put("Trasporti", createCategory("icc_transport", "expense", false));
-                    categories.put("Iscrizioni", createCategory("icc_subscriptions", "expense", false));
-                    categories.put("Cibo fuori casa", createCategory("icc_out_of_home", "expense", true));
-                    categories.put("Svago", createCategory("icc_entertainment", "expense", true));
-                    // INCOMES
-                    categories.put("Stipendio", createCategory("icc_job", "income", true));
-                    categories.put("Regalo", createCategory("icc_giftcard", "income", false));
-                    categories.put("Prestito", createCategory("icc_handshake", "income", true));
+                            Map<String, Object> creditCardBalance = new HashMap<>();
+                            creditCardBalance.put("value", creditValue);
+                            creditCardBalance.put("date", new java.util.Date());
+                            balances.put("credit_card", creditCardBalance);
 
-                    // Add categories to the user info and save to Firestore
-                    userInfo.put("categories", categories);
-                    dr.set(userInfo)
-                            .addOnSuccessListener(aVoid -> Log.d("UserCreation", "User and categories saved successfully"))
-                            .addOnFailureListener(e -> Log.e("UserCreation", "Error saving user and categories", e));
+                            userInfo.put("Balances", balances);
 
-                    Log.w("UserCreation", "Account created correctly", task.getException());
-                    Toast.makeText(Register.this, "Account created!", Toast.LENGTH_SHORT).show();
-                    startActivity(new Intent(getApplicationContext(), Home.class));
-                    finish();
-                } else {
-                    Log.w("UserCreation", "createUserWithEmail:failure", task.getException());
-                    Toast.makeText(Register.this, "Authentication failed!", Toast.LENGTH_SHORT).show();
-                }
+                            Map<String, Object> categories = new HashMap<>();
+                            categories.put("Cibo", createCategory("icc_food", "expense", true));
+                            categories.put("Casa", createCategory("icc_home", "expense", false));
+                            categories.put("Sport", createCategory("icc_sport", "expense", false));
+                            categories.put("Benessere", createCategory("icc_wellness", "expense", false));
+                            categories.put("Vestiti", createCategory("icc_clothes", "expense", false));
+                            categories.put("Trasporti", createCategory("icc_transport", "expense", false));
+                            categories.put("Iscrizioni", createCategory("icc_subscriptions", "expense", false));
+                            categories.put("Cibo fuori casa", createCategory("icc_out_of_home", "expense", true));
+                            categories.put("Svago", createCategory("icc_entertainment", "expense", true));
+                            categories.put("Stipendio", createCategory("icc_job", "income", true));
+                            categories.put("Regalo", createCategory("icc_giftcard", "income", false));
+                            categories.put("Prestito", createCategory("icc_handshake", "income", true));
 
+                            userInfo.put("categories", categories);
+
+                            dr.set(userInfo)
+                                    .addOnFailureListener(e -> Log.e("UserCreation", "Error saving user and categories", e))
+                                    .addOnSuccessListener(aVoid -> Log.d("UserCreation", "User and categories saved successfully"));
+
+                            Toast.makeText(Register.this, "Account created!", Toast.LENGTH_SHORT).show();
+                            startActivity(new Intent(getApplicationContext(), Home.class));
+                            finish();
+
+                        } else {
+                            Log.w("UserCreation", "createUserWithEmail:failure", task.getException());
+                            Toast.makeText(Register.this, "Authentication failed!", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                });
             });
         });
     }
@@ -163,4 +164,30 @@ public class Register extends AppCompatActivity {
         category.put("fav", fav);
         return category;
     }
+
+    private void askInitialBalance(String type, final java.util.function.Consumer<Double> callback) {
+        EditText input = new EditText(this);
+        input.setInputType(android.text.InputType.TYPE_CLASS_NUMBER | android.text.InputType.TYPE_NUMBER_FLAG_DECIMAL);
+        input.setHint("0.0");
+
+        new androidx.appcompat.app.AlertDialog.Builder(this)
+                .setTitle("Initial " + type + " balance")
+                .setMessage("Enter your initial " + type + " balance:")
+                .setView(input)
+                .setCancelable(false)
+                .setPositiveButton("Set", (dialog, which) -> {
+                    String valueStr = input.getText().toString().trim();
+                    try {
+                        double value = Double.parseDouble(valueStr);
+                        if (value < 0) throw new NumberFormatException();
+                        callback.accept(value);
+                    } catch (NumberFormatException e) {
+                        Toast.makeText(this, "Please enter a valid positive number", Toast.LENGTH_SHORT).show();
+                        askInitialBalance(type, callback); // Retry
+                    }
+                })
+                .setNegativeButton("Cancel", (dialog, which) -> callback.accept(0.0)) // Default to 0.0
+                .show();
+    }
+
 }
