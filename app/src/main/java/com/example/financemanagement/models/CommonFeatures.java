@@ -16,6 +16,7 @@ import androidx.lifecycle.LifecycleOwner;
 import com.example.financemanagement.Home;
 import com.example.financemanagement.Login;
 import com.example.financemanagement.R;
+import com.example.financemanagement.Savings;
 import com.example.financemanagement.Settings;
 import com.example.financemanagement.UserProfile;
 import com.google.firebase.auth.FirebaseAuth;
@@ -37,6 +38,17 @@ public class CommonFeatures {
             activity.setTheme(R.style.Theme_FinanceManagement);
             Log.d("DarkLight","Light mode enabled " + isDarkMode + R.style.Theme_FinanceManagement);
         }
+    }
+
+    public static void initialSettings(Activity activity) {
+        ImageView avatar = activity.findViewById(R.id.avatar);
+        ImageView settings = activity.findViewById(R.id.settings);
+
+        checkUserAndSetNameButton(activity, avatar);
+        settings.setOnClickListener(v -> {
+            activity.startActivity(new Intent(activity, Settings.class));
+            activity.finish();
+        });
     }
 
     // Static method to handle back press
@@ -74,7 +86,6 @@ public class CommonFeatures {
     // Check user authentication and set user button text
     public static void checkUserAndSetNameButton(Context context, ImageView userAvatar) {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-
 
         if (user == null) {
             context.startActivity(new Intent(context, Login.class));

@@ -1,6 +1,5 @@
 package com.example.financemanagement.models.charts;
 
-import android.graphics.Typeface;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -17,7 +16,6 @@ import com.github.mikephil.charting.data.PieData;
 import com.github.mikephil.charting.data.PieDataSet;
 import com.github.mikephil.charting.data.PieEntry;
 import com.github.mikephil.charting.utils.ColorTemplate;
-import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -27,6 +25,7 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public class PieChartFragment extends Fragment {
     private DocumentReference userRef;
@@ -73,7 +72,7 @@ public class PieChartFragment extends Fragment {
             // Get favorite categories
             Map<String, Object> categories = (Map<String, Object>) userDoc.get("categories");
             List<String> favoriteCategories = new ArrayList<>();
-            for (Map.Entry<String, Object> entry : categories.entrySet()) {
+            for (Map.Entry<String, Object> entry : Objects.requireNonNull(categories).entrySet()) {
                 Map<String, Object> category = (Map<String, Object>) entry.getValue();
                 if (Boolean.TRUE.equals(category.get("fav")) && "expense".equals(category.get("type")))
                     favoriteCategories.add(entry.getKey());

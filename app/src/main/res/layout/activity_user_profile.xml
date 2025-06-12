@@ -15,65 +15,159 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="20dp"
         android:layout_marginTop="16dp"
-        android:padding="10dp"
+        android:paddingVertical="10dp"
+        android:paddingHorizontal="20dp"
         android:text="Logout"
         android:textColor="@color/white"
-        android:textSize="15sp"
+        android:textSize="20sp"
         android:textStyle="bold"
+        android:fontFamily="@font/hornbill_blk_edited"
         style="@style/NegButton"/>
 
-    <ImageView
-        android:id="@+id/user"
-        android:layout_width="50dp"
-        android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true"
-        android:layout_marginEnd="26dp"
-        android:layout_marginTop="16dp"
-        android:text="U"
-        android:textColor="@color/black"
-        android:textSize="18sp" />
-
-    <TextView
-        android:id="@+id/username"
+    <RelativeLayout
+        android:id="@+id/user_info"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@+id/logout_btn"
-        android:layout_marginTop="35dp"
-        android:layout_marginHorizontal="10dp"
-        android:text="Username"
-        android:textSize="40sp"
-        android:textStyle="bold"
-        android:gravity="center" />
+        android:layout_marginVertical="25dp"
+        android:layout_marginHorizontal="25dp"
+        android:padding="10dp"
+        android:background="@drawable/rounded_ylw">
 
-    <RelativeLayout
-        android:id="@+id/profile_layout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/username"
-        android:layout_marginTop="20dp"
-        android:layout_marginHorizontal="25dp" >
+        <ImageView
+            android:id="@+id/user"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_alignParentStart="true"
+            android:text="U"
+            android:textColor="@color/white"
+            android:textSize="18sp"
+            android:src="@drawable/account_circle" />
 
-        <TextView
-            android:id="@+id/e"
-            android:layout_width="match_parent"
+        <LinearLayout
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginHorizontal="15dp"
-            android:text="Email"
-            android:textSize="15sp"
-            android:textStyle="italic"
-            android:gravity="center" />
+            android:layout_marginStart="10dp"
+            android:layout_alignParentEnd="true"
+            android:layout_toEndOf="@+id/user"
+            android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/email"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="20dp"
-            android:layout_below="@+id/e"
-            android:text="Email"
-            android:textSize="30sp"
-            android:gravity="center" />
+            <TextView
+                android:id="@+id/username"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_toEndOf="@+id/user"
+                android:text="Username"
+                android:textSize="40sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/email"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/e"
+                android:text="Email"
+                android:textSize="30sp" />
+
+        </LinearLayout>
 
     </RelativeLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/edit_btn"
+        android:layout_below="@+id/user_info"
+        android:layout_marginHorizontal="10dp"
+        android:layout_marginBottom="20dp"
+        android:background="@drawable/rounded_grey"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="15dp"
+            android:paddingHorizontal="40dp"
+            android:text="Settings"
+            android:textSize="30sp"
+            android:textStyle="bold" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingHorizontal="5dp">
+
+            <Button
+                android:id="@+id/card_stg"
+                style="@style/Button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="8dp"
+                android:layout_weight="1"
+                android:paddingVertical="15dp"
+                android:text="Card setting"
+                android:textSize="17sp" />
+
+            <Button
+                android:id="@+id/cash_stg"
+                style="@style/SecButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="8dp"
+                android:layout_weight="1"
+                android:paddingVertical="15dp"
+                android:text="Cash setting"
+                android:textSize="17sp" />
+
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/exp_categories"
+            style="@style/NegButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="30dp"
+            android:layout_marginTop="7dp"
+            android:paddingVertical="15dp"
+            android:text="Expenses Categories"
+            android:textSize="20sp" />
+
+        <Button
+            android:id="@+id/inc_categories"
+            style="@style/PosButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="30dp"
+            android:layout_marginTop="7dp"
+            android:paddingVertical="15dp"
+            android:text="Income Categories"
+            android:textSize="20sp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:gravity="center_vertical"
+                android:padding="10dp"
+                android:text="Dark/Light mode"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <Switch
+                android:id="@+id/switcher_mode"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:gravity="center" />
+
+        </LinearLayout>
+
+    </LinearLayout>
 
     <Button
         android:id="@+id/edit_btn"

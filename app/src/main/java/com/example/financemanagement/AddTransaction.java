@@ -1,14 +1,6 @@
 package com.example.financemanagement;
 
-import android.app.DatePickerDialog;
-import android.app.TimePickerDialog;
-import android.content.Context;
 import android.os.Bundle;
-import android.util.Log;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.Spinner;
-import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -18,13 +10,9 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.example.financemanagement.models.CommonFeatures;
-import com.example.financemanagement.models.Transaction;
 import com.example.financemanagement.models.ViewPagerAdapter;
 import com.google.android.material.tabs.TabLayout;
-import com.google.firebase.firestore.FirebaseFirestore;
 
-import java.time.LocalDateTime;
-import java.util.Locale;
 import java.util.Objects;
 
 public class AddTransaction extends AppCompatActivity {
@@ -41,7 +29,7 @@ public class AddTransaction extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
-        CommonFeatures.setBackToHome(this, this, getOnBackPressedDispatcher());
+        CommonFeatures.initialSettings(this);
 
         // Setting tabs
         tabLayout = findViewById(R.id.tabLayout);

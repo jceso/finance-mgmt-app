@@ -143,25 +143,19 @@ public class UserProfile extends AppCompatActivity {
 
     private void deleteUserData() {
         firestore = FirebaseFirestore.getInstance();
-        firestore.collection("Users").document(user.getUid()).delete().addOnSuccessListener(new OnSuccessListener<Void>() {
-            @Override
-            public void onSuccess(Void unused) {
-                Log.d("Delete User", "User document deleted from Firestore.");
+        firestore.collection("Users").document(user.getUid()).delete().addOnSuccessListener(lambda -> {
+            Log.d("Delete User", "User document deleted from Firestore.");
 
-                user.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
-                    @Override
-                    public void onSuccess(Void unused) {
-                        Log.d("Delete User", "User deleted from Firebase Authentication.");
-                        Toast.makeText(UserProfile.this, "User has been deleted successfully", Toast.LENGTH_SHORT).show();
+            user.delete().addOnSuccessListener(lambda1 -> {
+                Log.d("Delete User", "User deleted from Firebase Authentication.");
+                Toast.makeText(UserProfile.this, "User has been deleted successfully", Toast.LENGTH_SHORT).show();
 
-                        startActivity(new Intent(UserProfile.this, Login.class));
-                        finish();
-                    }
-                }).addOnFailureListener(e -> {
-                    Log.e("Delete User", "Failed to delete user from Firebase Authentication.", e);
-                    Toast.makeText(UserProfile.this, "ERROR: " + e, Toast.LENGTH_SHORT).show();
-                });
-            }
+                startActivity(new Intent(UserProfile.this, Login.class));
+                finish();
+            }).addOnFailureListener(e -> {
+                Log.e("Delete User", "Failed to delete user from Firebase Authentication.", e);
+                Toast.makeText(UserProfile.this, "ERROR: " + e, Toast.LENGTH_SHORT).show();
+            });
         }).addOnFailureListener(e -> Log.e("Delete User", "Failed to delete user document from Firestore.", e));
     }
 }

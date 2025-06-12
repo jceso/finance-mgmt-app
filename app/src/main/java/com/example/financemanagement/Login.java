@@ -14,6 +14,7 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.example.financemanagement.models.CommonFeatures;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -30,9 +31,9 @@ public class Login extends AppCompatActivity {
     public void onStart() {
         super.onStart();
         // Check if user is signed in (non-null) and update UI accordingly.
-        FirebaseUser currentUser = fAuth.getCurrentUser();
-        if (currentUser != null)
-            checkLevelAccess(currentUser.getUid());
+//        FirebaseUser currentUser = fAuth.getCurrentUser();
+//        if (currentUser != null)
+//            checkLevelAccess(currentUser.getUid());
     }
 
     @Override
@@ -45,6 +46,7 @@ public class Login extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+        CommonFeatures.setBackExit(this, this, getOnBackPressedDispatcher());
 
         fAuth = FirebaseAuth.getInstance();
         emailInput = findViewById(R.id.email);

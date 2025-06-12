@@ -14,6 +14,7 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.example.financemanagement.models.CommonFeatures;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
@@ -55,6 +56,7 @@ public class Register extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+        CommonFeatures.setBackExit(this, this, getOnBackPressedDispatcher());
 
         fAuth = FirebaseAuth.getInstance();
         fStore = FirebaseFirestore.getInstance();
@@ -102,11 +104,20 @@ public class Register extends AppCompatActivity {
                     Map<String,Object> userInfo = new HashMap<>();
                     userInfo.put("name", name);
                     userInfo.put("email", email);
-                    // Save initial balances
                     Map<String, Object> balances = new HashMap<>();
-                    balances.put("cash", 0);
-                    balances.put("credit_card", 0);
                     balances.put("save_perc", 15);
+
+                    // Cash balance
+                    Map<String, Object> cashBalance = new HashMap<>();
+                    cashBalance.put("value", 0.0);
+                    cashBalance.put("date", new java.util.Date());
+                    balances.put("cash", cashBalance);
+                    // Credit balance
+                    Map<String, Object> creditCardBalance = new HashMap<>();
+                    creditCardBalance.put("value", 0.0);
+                    creditCardBalance.put("date", new java.util.Date());
+                    balances.put("credit_card", creditCardBalance);
+
                     userInfo.put("Balances", balances);
 
                     // Define categories (directly in the user document)

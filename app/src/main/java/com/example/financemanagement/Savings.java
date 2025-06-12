@@ -1,6 +1,8 @@
 package com.example.financemanagement;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.widget.ImageView;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -23,6 +25,6 @@ public class Savings extends AppCompatActivity {
             return insets;
         });
 
-        CommonFeatures.setBackToHome(this, this, getOnBackPressedDispatcher());
+        CommonFeatures.initialSettings(this);
     }
 }

@@ -180,7 +180,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void pieChartSetting() {
-        PieChart pieChart = findViewById(R.id.chart);
+
         Calendar calendar = Calendar.getInstance();
 
         // FIRST DAY OF CURRENT MONTH
@@ -237,12 +237,6 @@ public class MainActivity extends AppCompatActivity {
                         PieDataSet dataSet = new PieDataSet(entries, null);
                         dataSet.setColors(ColorTemplate.MATERIAL_COLORS);
 
-                        pieChart.setData(new PieData(dataSet));
-                        pieChart.getDescription().setEnabled(false);
-                        pieChart.getLegend().setEnabled(false);
-                        pieChart.setCenterText("Favourite Expenses");
-                        pieChart.animateY(1000);
-                        pieChart.invalidate();
                     });
         });
     }

@@ -10,29 +10,48 @@ import androidx.viewpager2.adapter.FragmentStateAdapter;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.util.Objects;
+
 public class ChartPagerAdapter extends FragmentStateAdapter {
+    private Boolean isExpense;
+    private Boolean isHome;
 
     public ChartPagerAdapter(@NonNull FragmentActivity fragmentActivity) {
         super(fragmentActivity);
-        Log.d("ChartPagerAdapter", "ChartPagerAdapter constructor called");
+    }
+
+    public ChartPagerAdapter(@NonNull FragmentActivity fragmentActivity, Boolean isExpense) {
+        super(fragmentActivity);
+        this.isExpense = isExpense;
     }
 
     @NonNull
     @Override
     public Fragment createFragment(int position) {
         FirebaseFirestore fStore = FirebaseFirestore.getInstance();
-        String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
-
+        String userId = Objects.requireNonNull(FirebaseAuth.getInstance().getCurrentUser()).getUid();
         Log.d("ChartPagerAdapter", "createFragment called with position: " + position);
 
-        switch (position) {
-            case 1:
-                return new BarChartFragment(fStore, userId);
-            case 2:
-                return new LineChartFragment(fStore, userId);
-            case 0:
-            default:
-                return new PieChartFragment(fStore, userId);
+        if (!isExpense) {
+            switch (position) {
+                case 1:
+                    return new BarChartFragment(fStore, userId);
+                case 2:
+                    return new LineChartFragment(fStore, userId);
+                case 0:
+                default:
+                    return new PieChartFragment(fStore, userId);
+            }
+        } else {
+            switch (position) {
+                case 1:
+                    return new BarChartFragment(fStore, userId);
+                case 2:
+                    return new LineChartFragment(fStore, userId);
+                case 0:
+                default:
+                    return new PieChartFragment(fStore, userId);
+            }
         }
     }
 

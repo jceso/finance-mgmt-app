@@ -13,26 +13,17 @@ import androidx.viewpager2.widget.ViewPager2;
 
 import com.example.financemanagement.models.CommonFeatures;
 import com.example.financemanagement.models.charts.ChartPagerAdapter;
-import com.github.mikephil.charting.charts.PieChart;
-import com.github.mikephil.charting.data.PieData;
-import com.github.mikephil.charting.data.PieDataSet;
-import com.github.mikephil.charting.data.PieEntry;
-import com.github.mikephil.charting.utils.ColorTemplate;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
 
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 
 import android.util.Log;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -54,34 +45,31 @@ public class Home extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+        CommonFeatures.initialSettings(this);
+        CommonFeatures.setBackExit(this, this, getOnBackPressedDispatcher());
 
-        // Set back button action
-        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
-            @Override
-            public void handleOnBackPressed() {
-                long currentTime = System.currentTimeMillis();
-
-                if (lastBackPressedTime + 2000 > currentTime) {
-                    if (backToast != null)
-                        backToast.cancel();
-                    finish();
-                } else {
-                    backToast = Toast.makeText(Home.this, "Press again to exit", Toast.LENGTH_SHORT);
-                    backToast.show();
-                    lastBackPressedTime = currentTime;
-                }
-            }
-        });
 
         fStore = FirebaseFirestore.getInstance();
-        userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+
+        if (user != null) {
+            userId = user.getUid();
+            // Proceed with logic
+        } else {
+            // Redirect to login or handle unauthorized access
+            Log.e("Home", "User is not logged in!");
+            Intent intent = new Intent(this, Login.class);
+            startActivity(intent);
+            finish();
+        }
+
 
         // Initialize the ViewPager2
         ViewPager2 viewPager = findViewById(R.id.view_pager);
         if (viewPager == null)
             Log.e("MainActivity", "ViewPager2 is null. Check the layout.");
         else {
-            ChartPagerAdapter adapter = new ChartPagerAdapter(this);
+            ChartPagerAdapter adapter = new ChartPagerAdapter(this, false);
             viewPager.setAdapter(adapter);
         }
         // Initialize the CircleIndicator3
@@ -97,12 +85,13 @@ public class Home extends AppCompatActivity {
         // Da mantenere tra i preferiti Cibo-CiboFuoriCasa-Svago
 
         // 55% Spese fisse - Casa, Cibo, Trasporti
-        // 30% Spese variabili - Aperitivi, Cibo fuori casa
+        // 30% Spese variabili - Svago, Cibo fuori casa
         // 15% Risparmio o Emergenze
 
         ImageView avatar = findViewById(R.id.avatar);
+        Log.d("Avatar", "Avatar: " + avatar);
         ImageView settings = findViewById(R.id.settings);
-        CommonFeatures.checkUserAndSetNameButton(Home.this, avatar);
+        // CommonFeatures.checkUserAndSetNameButton(Home.this, avatar);
 
         ImageView pig = findViewById(R.id.summary);
         Button incomeBtn = findViewById(R.id.income);
@@ -169,8 +158,8 @@ public class Home extends AppCompatActivity {
                             }
                         }
 
-                        cardMoney.setText(String.format("€%d", cardBalance));
-                        cashMoney.setText(String.format("€%d", cashBalance));
+                        cardMoney.setText(String.format(Locale.getDefault(), "€%d", cardBalance));
+                        cashMoney.setText(String.format(Locale.getDefault(), "€%d", cashBalance));
                     } else {
                         cardMoney.setText("€0");
                         cashMoney.setText("€0");
@@ -179,76 +168,8 @@ public class Home extends AppCompatActivity {
                     // Retrieve incomes
                 }
             }).addOnFailureListener(e -> {
-                cardMoney.setText("Errore");
-                cashMoney.setText("Errore");
-        });
-    }
-
-    private void pieChartSetting() {
-        PieChart pieChart = findViewById(R.id.chart);
-        Calendar calendar = Calendar.getInstance();
-
-        // FIRST DAY OF CURRENT MONTH
-        calendar.set(Calendar.DAY_OF_MONTH, 1);
-        calendar.set(Calendar.HOUR_OF_DAY, 0);
-        calendar.set(Calendar.MINUTE, 0);
-        calendar.set(Calendar.SECOND, 0);
-        calendar.set(Calendar.MILLISECOND, 0);
-        long startOfMonth = calendar.getTimeInMillis();
-        // LAST DAY OF CURRENT MONTH
-        calendar.set(Calendar.DAY_OF_MONTH, calendar.getActualMaximum(Calendar.DAY_OF_MONTH));
-        calendar.set(Calendar.HOUR_OF_DAY, 23);
-        calendar.set(Calendar.MINUTE, 59);
-        calendar.set(Calendar.SECOND, 59);
-        calendar.set(Calendar.MILLISECOND, 999);
-        long endOfMonth = calendar.getTimeInMillis();
-
-        Log.d("PieChart Debug", "Start of month: " + startOfMonth + " || End of month: " + endOfMonth);
-
-        fStore.collection("Users").document(userId).get().addOnSuccessListener(userDoc -> {
-            if (!userDoc.exists()) return;
-
-            // Get favorite categories
-            Map<String, Object> categories = (Map<String, Object>) userDoc.get("categories");
-            List<String> favoriteCategories = new ArrayList<>();
-            for (Map.Entry<String, Object> entry : categories.entrySet()) {
-                Map<String, Object> category = (Map<String, Object>) entry.getValue();
-                if (Boolean.TRUE.equals(category.get("fav")) && "expense".equals(category.get("type")))
-                    favoriteCategories.add(entry.getKey());
-            }
-
-            // Fetch all expense transactions for the current month
-            fStore.collection("Users").document(userId).collection("Transactions")
-                .whereGreaterThanOrEqualTo("date", startOfMonth).whereLessThanOrEqualTo("date", endOfMonth)
-                .get().addOnSuccessListener(querySnapshot -> {
-                    Map<String, Float> categorySums = new HashMap<>();
-
-                    for (QueryDocumentSnapshot doc : querySnapshot) {
-                        String type = doc.getString("type");
-                        String category = doc.getString("category");
-                        Number amount = doc.getDouble("amount");
-
-                        if ("expense".equals(type) && favoriteCategories.contains(category) && amount != null)
-                            categorySums.put(category, categorySums.getOrDefault(category, 0f) + amount.floatValue());
-                        Log.d("PieChart Debug", "Category: " + category + ", Amount: " + amount + " | Category sums: " +categorySums);
-                    }
-
-                    // Build PieChart entries
-                    ArrayList<PieEntry> entries = new ArrayList<>();
-                    for (Map.Entry<String, Float> entry : categorySums.entrySet()) {
-                        entries.add(new PieEntry(entry.getValue(), entry.getKey()));
-                    }
-
-                    PieDataSet dataSet = new PieDataSet(entries, null);
-                    dataSet.setColors(ColorTemplate.MATERIAL_COLORS);
-
-                    pieChart.setData(new PieData(dataSet));
-                    pieChart.getDescription().setEnabled(false);
-                    pieChart.getLegend().setEnabled(false);
-                    pieChart.setCenterText("Favourite Expenses");
-                    pieChart.animateY(1000);
-                    pieChart.invalidate();
-            });
+                cardMoney.setText("Error");
+                cashMoney.setText("Error");
         });
     }
 }

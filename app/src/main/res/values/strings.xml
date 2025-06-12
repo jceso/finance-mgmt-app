@@ -3,4 +3,6 @@
     <string name="money_default">€100</string>
     <string name="text">Hello world, this is a text for testing</string>
     <string name="amount_money">Amount</string>
+    <string name="account">Account</string>
+    <string name="settings">Settings</string>
 </resources>
