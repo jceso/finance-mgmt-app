@@ -200,7 +200,7 @@ public class ViewPagerAdapter extends FragmentStateAdapter {
         });
 
         save_btn.setOnClickListener(v -> {
-            boolean isValid = true;
+            boolean isValid = true, isFixed;
 
             // Check if amount, note, date and time are empty
             if (!amount.getText().toString().trim().matches("^\\d+(\\.\\d{1,2})?$")) {
@@ -233,6 +233,7 @@ public class ViewPagerAdapter extends FragmentStateAdapter {
             }
 
             if (isValid) {
+                // Payment method setting
                 String pmt_method;
                 if (card_or_cash.getCheckedRadioButtonId() == R.id.r_card)
                     pmt_method = "credit_card";
@@ -241,49 +242,76 @@ public class ViewPagerAdapter extends FragmentStateAdapter {
                 Log.d("BalanceDebug", "Selected method: " + pmt_method);
 
                 // Transaction setting
+                float transactionAmount = Float.parseFloat(amount.getText().toString());
                 Transaction transaction = new Transaction();
                 transaction.setType(isExpense ? "expense" : "income");
-                transaction.setAmount(Float.parseFloat(amount.getText().toString()));
+                transaction.setAmount(transactionAmount);
                 transaction.setCategory(((Category)category_spinner.getSelectedItem()).getName());
                 transaction.setNote(note.getText().toString());
                 transaction.setDate(dateInfos[0], dateInfos[1], dateInfos[2], dateInfos[3], dateInfos[4]);
                 transaction.setMethod(pmt_method);
 
+                DocumentReference userRef = db.collection("Users").document(user.getUid());
+
                 // Save transaction in FirestoreFirebase
-                db.collection("Users").document(user.getUid())
-                    .collection("Transactions").add(transaction)
+                userRef.collection("Transactions").add(transaction)
                     .addOnSuccessListener(documentReference -> Log.d("SaveTransaction", "Saved transaction with ID: " + documentReference.getId() + " | Category " + transaction.getCategory()))
                     .addOnFailureListener(e -> Log.e("SaveTransaction", "Saving error", e));
 
                 // Update Balance
-                DocumentReference userRef = db.collection("Users").document(user.getUid());
-
+                isFixed = !repeat.getText().toString().equals("Not repeated");
                 db.runTransaction((com.google.firebase.firestore.Transaction.Function<Void>) firestoreTransaction -> {
-                        DocumentSnapshot snapshot = firestoreTransaction.get(userRef);
+                    DocumentSnapshot snapshot = firestoreTransaction.get(userRef);
 
-                        Map<String, Object> methodBalance = (Map<String, Object>) snapshot.get("Balances." + pmt_method);
-                        Double oldValueObj = (Double) Objects.requireNonNull(methodBalance).get("value");
-                        if (oldValueObj == null)
-                            throw new IllegalStateException(pmt_method + " missing 'value' field!");
+                    Map<String, Object> methodBalance = (Map<String, Object>) snapshot.get("Balances." + pmt_method);
+                    Double oldValueObj = (Double) Objects.requireNonNull(methodBalance).get("value");
+                    if (oldValueObj == null)
+                        throw new IllegalStateException(pmt_method + " missing 'value' field!");
 
-                        double oldValue = oldValueObj;
-                        double newValue = isExpense ? oldValue - transaction.getAmount()
-                                                    : oldValue + transaction.getAmount();
+                    double oldValue = oldValueObj;
+                    double newValue = isExpense ? oldValue - transaction.getAmount()
+                                                : oldValue + transaction.getAmount();
 
-                        Map<String, Object> updates = new HashMap<>();
-                        updates.put("Balances." + pmt_method + ".value", newValue);
-                        updates.put("Balances." + pmt_method + ".date", new Date());
+                    Map<String, Object> updates = new HashMap<>();
+                    updates.put("Balances." + pmt_method + ".value", newValue);
+                    updates.put("Balances." + pmt_method + ".date", new Date());
 
-                        firestoreTransaction.update(userRef, updates);
-                        return null;
-                    }).addOnSuccessListener(aVoid -> {
-                        Log.d("BalanceDebug", "Balance and date successfully updated");
-                        Toast.makeText(context, "Transaction saved", Toast.LENGTH_SHORT).show();
+                    // If fixed income/expense, it updates the value_monthly field
+                    if (isFixed) {
+                        Map<String, Object> fixedIncomeMap = (Map<String, Object>) snapshot.get("Balances.fixed_income");
 
-                        context.startActivity(new Intent(context, Home.class));
-                        if (context instanceof FragmentActivity)
-                            ((FragmentActivity) context).finish();
-                    }).addOnFailureListener(e -> Log.e("BalanceDebug", "Error updating balance", e));
+                        float fixed_income = 0.0F;
+                        switch (repeat.getText().toString()) {
+                            case "Not repeated": break;
+                            case "Daily": fixed_income = transactionAmount*30; break;
+                            case "Weekly": fixed_income = transactionAmount*4; break;
+                            case "Monthly": fixed_income = transactionAmount; break;
+                            case "Yearly": fixed_income = transactionAmount/12; break;
+                        }
+
+                        if (fixedIncomeMap != null) {
+                            Number oldFixedIncome = (Number) fixedIncomeMap.get("value_monthly");
+
+                            float currentFixedIncome = oldFixedIncome != null ? oldFixedIncome.floatValue() : 0f;
+
+                            float newFixedIncome = isExpense
+                                    ? currentFixedIncome - fixed_income
+                                    : currentFixedIncome + fixed_income;
+
+                            firestoreTransaction.update(userRef, "Balances.fixed_income.value_monthly", newFixedIncome);
+                        }
+                    }
+
+                    firestoreTransaction.update(userRef, updates);
+                    return null;
+                }).addOnSuccessListener(aVoid -> {
+                    Log.d("BalanceDebug", "Balance and date successfully updated");
+                    Toast.makeText(context, "Transaction saved", Toast.LENGTH_SHORT).show();
+
+                    context.startActivity(new Intent(context, Home.class));
+                    if (context instanceof FragmentActivity)
+                        ((FragmentActivity) context).finish();
+                }).addOnFailureListener(e -> Log.e("BalanceDebug", "Error updating balance", e));
             }
         });
     }

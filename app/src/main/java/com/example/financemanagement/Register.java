@@ -106,11 +106,10 @@ public class Register extends AppCompatActivity {
                         userInfo.put("email", email);
 
                         Map<String, Object> balances = new HashMap<>();
-                        balances.put("save_perc", 15);
 
                         Map<String, Object> fixedIncome = new HashMap<>();
                         fixedIncome.put("save_perc", 15);
-                        fixedIncome.put("monthly_income", 0);
+                        fixedIncome.put("value_monthly", 0);
                         balances.put("fixed_income", fixedIncome);
 
                         Map<String, Object> cashBalance = new HashMap<>();
