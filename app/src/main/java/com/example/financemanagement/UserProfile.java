@@ -23,7 +23,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import java.util.HashSet;
 
 public class UserProfile extends AppCompatActivity {
-    FirebaseFirestore firestore;
+    private FirebaseFirestore firestore;
     private FirebaseUser user;
     private HashSet<String> salesList;
 
