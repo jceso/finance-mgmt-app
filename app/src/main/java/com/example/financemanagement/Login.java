@@ -16,7 +16,6 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.example.financemanagement.models.CommonFeatures;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.Objects;

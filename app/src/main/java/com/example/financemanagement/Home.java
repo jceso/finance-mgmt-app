@@ -8,13 +8,14 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
-import androidx.activity.OnBackPressedCallback;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.example.financemanagement.models.CommonFeatures;
 import com.example.financemanagement.models.charts.ChartPagerAdapter;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.Locale;
@@ -25,16 +26,16 @@ import android.util.Log;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import me.relex.circleindicator.CircleIndicator3;
 
 public class Home extends AppCompatActivity {
     private FirebaseFirestore fStore;
+    private FirebaseUser user;
     private String userId;
     private TextView cardMoney, cashMoney;
-    private long lastBackPressedTime = 0;
-    private Toast backToast;
+    private double cardBalance = 0L, cashBalance = 0L;
+    private float monthlyVarExp = 0, incTotal = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,7 +52,7 @@ public class Home extends AppCompatActivity {
 
 
         fStore = FirebaseFirestore.getInstance();
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        user = FirebaseAuth.getInstance().getCurrentUser();
 
         if (user != null) {
             userId = user.getUid();
@@ -70,7 +71,7 @@ public class Home extends AppCompatActivity {
         if (viewPager == null)
             Log.e("MainActivity", "ViewPager2 is null. Check the layout.");
         else {
-            ChartPagerAdapter adapter = new ChartPagerAdapter(this, false);
+            ChartPagerAdapter adapter = new ChartPagerAdapter(this, true);
             viewPager.setAdapter(adapter);
         }
         // Initialize the CircleIndicator3
@@ -81,6 +82,7 @@ public class Home extends AppCompatActivity {
             circleIndicator.setViewPager(viewPager);
 
         moneySetting();
+        savingsSetting();
 
         // Cibo, Casa, Sport, Benessere, Vestiti, Trasporti, Abbonamenti, Cibo fuori casa, Svago
         // Da mantenere tra i preferiti Cibo-CiboFuoriCasa-Svago
@@ -99,7 +101,10 @@ public class Home extends AppCompatActivity {
         Button expensesBtn = findViewById(R.id.expenses);
 
         pig.setOnClickListener(v -> {
-            startActivity(new Intent(Home.this, Savings.class));
+            Intent intentSvg = new Intent(Home.this, Savings.class);
+            intentSvg.putExtra("curr_incomes", incTotal);
+            intentSvg.putExtra("curr_expenses", monthlyVarExp);
+            startActivity(intentSvg);
             finish();
         });
 
@@ -107,6 +112,7 @@ public class Home extends AppCompatActivity {
         cardMoney.setOnClickListener(v -> {
             Intent intentCc = new Intent(Home.this, TransactionsShow.class);
             intentCc.putExtra("type", "credit_card");
+            intentCc.putExtra("money", String.format(Locale.getDefault(), "€%.2f", cardBalance));
             startActivity(intentCc);
             finish();
         });
@@ -115,6 +121,7 @@ public class Home extends AppCompatActivity {
         cashMoney.setOnClickListener(v -> {
             Intent intentCash = new Intent(Home.this, TransactionsShow.class);
             intentCash.putExtra("type", "cash");
+            intentCash.putExtra("money", String.format(Locale.getDefault(), "€%.2f", cashBalance));
             startActivity(intentCash);
             finish();
         });
@@ -152,15 +159,13 @@ public class Home extends AppCompatActivity {
 
                     if (balancesObj instanceof Map) {
                         Map<String, Object> balancesMap = (Map<String, Object>) balancesObj;
-                        long cardBalance = 0L;
-                        long cashBalance = 0L;
 
                         Object creditCardObj = balancesMap.get("credit_card");
                         if (creditCardObj instanceof Map) {
                             Map<String, Object> creditCardMap = (Map<String, Object>) creditCardObj;
                             Object value = creditCardMap.get("value");
                             if (value instanceof Number) {
-                                cardBalance = ((Number) value).longValue();
+                                cardBalance = ((Number) value).doubleValue();
                             }
                         }
 
@@ -169,12 +174,12 @@ public class Home extends AppCompatActivity {
                             Map<String, Object> cashMap = (Map<String, Object>) cashObj;
                             Object value = cashMap.get("value");
                             if (value instanceof Number) {
-                                cashBalance = ((Number) value).longValue();
+                                cashBalance = ((Number) value).doubleValue();
                             }
                         }
 
-                        cardMoney.setText(String.format(Locale.getDefault(), "€%d", cardBalance));
-                        cashMoney.setText(String.format(Locale.getDefault(), "€%d", cashBalance));
+                        cardMoney.setText(String.format(Locale.getDefault(), "€%d", (int) cardBalance));
+                        cashMoney.setText(String.format(Locale.getDefault(), "€%d", (int) cashBalance));
                     } else {
                         cardMoney.setText("€0");
                         cashMoney.setText("€0");
@@ -186,5 +191,79 @@ public class Home extends AppCompatActivity {
                 cardMoney.setText("Error");
                 cashMoney.setText("Error");
         });
+    }
+
+    private void savingsSetting() {
+        DocumentReference userRef = fStore.collection("Users").document(user.getUid());
+
+        userRef.get().addOnSuccessListener(documentSnapshot -> {
+            if (documentSnapshot.exists()) {
+                // 1. Fetch fixed_income and save_perc
+                Map<String, Object> balances = (Map<String, Object>) documentSnapshot.get("Balances");
+                double fixedIncome;
+                int savePerc;
+
+                if (balances != null && balances.get("fixed_income") instanceof Map) {
+                    Log.d("HomeSavings", "Fixed income found! " + balances.get("fixed_income"));
+                    Map<String, Object> fixedIncomeMap = (Map<String, Object>) balances.get("fixed_income");
+
+                    Object valueMonthlyObj = Objects.requireNonNull(fixedIncomeMap).get("value_monthly");
+                    Object savePercObj = fixedIncomeMap.get("save_perc");
+
+                    if (valueMonthlyObj instanceof Number)
+                        fixedIncome = ((Number) valueMonthlyObj).doubleValue();
+                    else
+                        fixedIncome = 0;
+                    if (savePercObj instanceof Number)
+                        savePerc = ((Number) savePercObj).intValue();
+                    else
+                        savePerc = 10;
+                } else {
+                    Log.d("HomeSavings", "Fixed income not found!");
+                    savePerc = 10;
+                    fixedIncome = 0;
+                }
+
+                // 2. Fetch all the transactions
+                userRef.collection("Transactions").get().addOnSuccessListener(queryDocumentSnapshots -> {
+                    float monthlyVarInc = 0.0F; // Guadagno variabile mensile
+                    monthlyVarExp = 0.0F; // Spesa variabile mensile
+
+                    for (DocumentSnapshot doc : queryDocumentSnapshots.getDocuments()) {
+                        String type = doc.getString("type");
+                        String frequency = doc.getString("frequency");
+                        Double amount = doc.getDouble("amount");
+
+                        if ("once".equals(frequency) && type != null && amount != null) {
+                            if ("income".equals(type))
+                                monthlyVarInc += amount;
+                            else
+                                monthlyVarExp += amount;
+                        }
+                    }
+
+                    // 3. Calculate totals
+                    incTotal = (float) (fixedIncome + monthlyVarInc);
+                    float currTheoreticalSavings = (float) (((double) savePerc /100)*incTotal);
+                    float maxCurExpenses = incTotal - currTheoreticalSavings;
+                    Log.d("HomeSavings", "Totale guadagni variabili: " + monthlyVarInc + " | Risparmio fisso: " + fixedIncome + " | Risparmio netto: " + incTotal);
+                    Log.d("HomeSavings", "Risparmio del " + savePerc + "% | Si possono spendere " + maxCurExpenses + " euro");
+
+                    // 4. Modify pig image
+                    ImageView pigImage = findViewById(R.id.summary);
+                    if (monthlyVarExp > maxCurExpenses) {
+                        Log.d("HomeSavings", "Hai sprecato soldi, hai rotto il porco :(\n  Questo mese avevi " + incTotal + " di guadagno, ma hai speso " + monthlyVarExp + "\n  Ti restano " + (incTotal-monthlyVarExp) + " rispetto al risparmio teorico di " + currTheoreticalSavings);
+
+                        pigImage.setBackgroundResource(R.drawable.pig_mood_sad);
+                        pigImage.setImageResource(R.drawable.pig_sad_original);
+                    } else {
+                        Log.d("HomeSavings", "Hai risparmiato soldi, il porco è salvo :)\n  Questo mese avevi " + incTotal + " di guadagno e hai speso " + monthlyVarExp + "\n  Ti restano " + (incTotal-monthlyVarExp) + " rispetto al risparmio teorico di " + currTheoreticalSavings);
+
+                        pigImage.setBackgroundResource(R.drawable.pig_mood_happy);
+                        pigImage.setImageResource(R.drawable.pig_happy);
+                    }
+                }).addOnFailureListener(e -> Log.e("Savings", "Errore nel recupero transazioni", e));
+            }
+        }).addOnFailureListener(e -> Log.e("Savings", "Errore nel recupero dati utente", e));
     }
 }

@@ -13,8 +13,6 @@ import androidx.viewpager2.widget.ViewPager2;
 
 import com.example.financemanagement.models.CommonFeatures;
 import com.example.financemanagement.models.charts.ChartPagerAdapter;
-import com.github.mikephil.charting.charts.PieChart;
-import com.github.mikephil.charting.data.PieData;
 import com.github.mikephil.charting.data.PieDataSet;
 import com.github.mikephil.charting.data.PieEntry;
 import com.github.mikephil.charting.utils.ColorTemplate;
@@ -26,7 +24,9 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 
 import android.util.Log;
 import android.widget.Button;
@@ -72,7 +72,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         fStore = FirebaseFirestore.getInstance();
-        userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        userId = Objects.requireNonNull(FirebaseAuth.getInstance().getCurrentUser()).getUid();
 
         // Initialize the ViewPager2
         ViewPager2 viewPager = findViewById(R.id.view_pager);
@@ -164,8 +164,8 @@ public class MainActivity extends AppCompatActivity {
                             cashBalance = ((Number) value).longValue();
                     }
 
-                    cardMoney.setText(String.format("€%d", cardBalance));
-                    cashMoney.setText(String.format("€%d", cashBalance));
+                    cardMoney.setText(String.format(Locale.getDefault(), "€%d", cardBalance));
+                    cashMoney.setText(String.format(Locale.getDefault(), "€%d", cashBalance));
                 } else {
                     cardMoney.setText("€0");
                     cashMoney.setText("€0");
@@ -206,7 +206,7 @@ public class MainActivity extends AppCompatActivity {
             // Get favorite categories
             Map<String, Object> categories = (Map<String, Object>) userDoc.get("categories");
             List<String> favoriteCategories = new ArrayList<>();
-            for (Map.Entry<String, Object> entry : categories.entrySet()) {
+            for (Map.Entry<String, Object> entry : Objects.requireNonNull(categories).entrySet()) {
                 Map<String, Object> category = (Map<String, Object>) entry.getValue();
                 if (Boolean.TRUE.equals(category.get("fav")) && "expense".equals(category.get("type")))
                     favoriteCategories.add(entry.getKey());

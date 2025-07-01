@@ -13,16 +13,15 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import java.util.Objects;
 
 public class ChartPagerAdapter extends FragmentStateAdapter {
-    private Boolean isExpense;
     private Boolean isHome;
 
     public ChartPagerAdapter(@NonNull FragmentActivity fragmentActivity) {
         super(fragmentActivity);
     }
 
-    public ChartPagerAdapter(@NonNull FragmentActivity fragmentActivity, Boolean isExpense) {
+    public ChartPagerAdapter(@NonNull FragmentActivity fragmentActivity, Boolean isHome) {
         super(fragmentActivity);
-        this.isExpense = isExpense;
+        this.isHome = isHome;
     }
 
     @NonNull
@@ -32,25 +31,25 @@ public class ChartPagerAdapter extends FragmentStateAdapter {
         String userId = Objects.requireNonNull(FirebaseAuth.getInstance().getCurrentUser()).getUid();
         Log.d("ChartPagerAdapter", "createFragment called with position: " + position);
 
-        if (!isExpense) {
+        if (!isHome) {
             switch (position) {
+                case 0:
+                default:
+                    return new PieChartFragment(fStore, userId);
                 case 1:
                     return new BarChartFragment(fStore, userId);
                 case 2:
                     return new LineChartFragment(fStore, userId);
-                case 0:
-                default:
-                    return new PieChartFragment(fStore, userId);
             }
-        } else {
+        } else {    // Statistics or TransactionsShow view
             switch (position) {
+                case 0:
+                default:
+                    return new PieChartFragment(fStore, userId, true, true);
                 case 1:
                     return new BarChartFragment(fStore, userId);
                 case 2:
                     return new LineChartFragment(fStore, userId);
-                case 0:
-                default:
-                    return new PieChartFragment(fStore, userId);
             }
         }
     }

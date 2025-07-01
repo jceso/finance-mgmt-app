@@ -1,13 +1,12 @@
 package com.example.financemanagement;
 
+import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
 
@@ -16,17 +15,24 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.lifecycle.LifecycleOwner;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.example.financemanagement.models.Category;
 import com.example.financemanagement.models.CategoryAdapter;
 import com.example.financemanagement.models.CommonFeatures;
+import com.example.financemanagement.models.Transaction;
+import com.example.financemanagement.models.TransactionAdapter;
 import com.example.financemanagement.models.charts.ChartPagerAdapter;
+import com.firebase.ui.firestore.FirestoreRecyclerOptions;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -47,15 +53,25 @@ public class TransactionsShow extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+
+        db = FirebaseFirestore.getInstance();
+        user = FirebaseAuth.getInstance().getCurrentUser();
         CommonFeatures.initialSettings(this);
         CommonFeatures.setBackToHome(this, this, getOnBackPressedDispatcher());
+
         // Get the type of transactions to show
+        TextView type = findViewById(R.id.type);
+        TextView amount = findViewById(R.id.amount);
         String transactionsType = getIntent().getStringExtra("type");
+        String moneyAmount = getIntent().getStringExtra("money");
+        Log.d("TransactionsShow", "Transactions type: " + transactionsType + ", Money: " + moneyAmount);
+        type.setText(!Objects.equals(transactionsType, "credit_card") ? "Cash" : "Card");
+        amount.setText(moneyAmount);
 
         // Initialize the ViewPager2
         ViewPager2 viewPager = findViewById(R.id.view_pager);
         if (viewPager == null)
-            Log.e("MainActivity", "ViewPager2 is null. Check the layout.");
+            Log.e("TransactionsShow", "ViewPager2 is null. Check the layout.");
         else {
             ChartPagerAdapter adapter = new ChartPagerAdapter(this, false);
             viewPager.setAdapter(adapter);
@@ -63,14 +79,37 @@ public class TransactionsShow extends AppCompatActivity {
         // Initialize the CircleIndicator3
         CircleIndicator3 circleIndicator = findViewById(R.id.circle_indicator);
         if (circleIndicator == null)
-            Log.e("MainActivity", "CircleIndicator3 is null. Check the layout.");
+            Log.e("TransactionsShow", "CircleIndicator3 is null. Check the layout.");
         else
             circleIndicator.setViewPager(viewPager);
 
-        transactionSearch(this, this);
+        getTransactions("date", this, this);    // Chiamata iniziale
+        orderSpinnerSetup(this, this, this);
     }
 
-    private static void orderSpinnerSetup(Spinner order_spinner, Context context) {
+    private static void getTransactions(String orderByField, LifecycleOwner lcOwner, Activity activity) {
+        Query query = db.collection("Users")
+            .document(user.getUid())
+            .collection("Transactions")
+            .orderBy(orderByField, Query.Direction.DESCENDING);
+
+        FirestoreRecyclerOptions<Transaction> options = new FirestoreRecyclerOptions.Builder<Transaction>()
+            .setQuery(query, Transaction.class).setLifecycleOwner(lcOwner).build();
+
+        TransactionAdapter adapter = new TransactionAdapter(options);
+        RecyclerView recyclerView = activity.findViewById(R.id.recycler_view);
+        recyclerView.setLayoutManager(new LinearLayoutManager(activity));
+        recyclerView.setAdapter(adapter);
+
+        TextView emptyList = activity.findViewById(R.id.empty_list);
+        if (adapter.getItemCount() == 0)
+            emptyList.setVisibility(View.GONE);
+        else
+            emptyList.setVisibility(View.VISIBLE);
+    }
+
+    private void orderSpinnerSetup(Context context, AppCompatActivity activity, LifecycleOwner lcOwner) {
+        Spinner order_spinner = activity.findViewById(R.id.order_spinner);
         List<String> orderOptions = new ArrayList<>();
         orderOptions.add("Date");
         orderOptions.add("Amount");
@@ -78,9 +117,24 @@ public class TransactionsShow extends AppCompatActivity {
         ArrayAdapter<String> adapter = new ArrayAdapter<>(context, android.R.layout.simple_spinner_item, orderOptions);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         order_spinner.setAdapter(adapter);
+
+        // Listener per aggiornare l'adapter quando cambia selezione
+        order_spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                // Aggiorna il RecyclerView con il nuovo ordine ("date" o "amount")
+                String selected = orderOptions.get(position).toLowerCase();
+                getTransactions(selected, lcOwner, activity);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {}
+        });
     }
 
-    private static void ctgSpinnerSetup(Spinner category_spinner, Boolean isExpense, Context context) {
+    private static void ctgSpinnerSetup(Activity activity, Boolean isExpense, Context context) {
+        Spinner category_spinner = activity.findViewById(R.id.category_spinner);
+
         if (user != null) {
             String categoryType = isExpense ? "expense" : "income";
             Log.d("SpinnerSetup","Category type: " + categoryType);
@@ -117,11 +171,4 @@ public class TransactionsShow extends AppCompatActivity {
         }
     }
 
-    private static void transactionSearch(AppCompatActivity activity, Context context) {
-        Spinner order_spinner = activity.findViewById(R.id.order_spinner);
-        Spinner category_spinner = activity.findViewById(R.id.category_spinner);
-
-        orderSpinnerSetup(order_spinner, context);
-        ctgSpinnerSetup(category_spinner, false, context);
-    }
 }

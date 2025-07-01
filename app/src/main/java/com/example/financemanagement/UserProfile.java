@@ -15,7 +15,6 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.example.financemanagement.models.CommonFeatures;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -23,7 +22,6 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import java.util.HashSet;
 
 public class UserProfile extends AppCompatActivity {
-    private FirebaseFirestore firestore;
     private FirebaseUser user;
     private HashSet<String> salesList;
 
@@ -142,7 +140,7 @@ public class UserProfile extends AppCompatActivity {
     */
 
     private void deleteUserData() {
-        firestore = FirebaseFirestore.getInstance();
+        FirebaseFirestore firestore = FirebaseFirestore.getInstance();
         firestore.collection("Users").document(user.getUid()).delete().addOnSuccessListener(lambda -> {
             Log.d("Delete User", "User document deleted from Firestore.");
 

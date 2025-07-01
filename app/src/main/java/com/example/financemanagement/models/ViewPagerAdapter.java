@@ -233,6 +233,8 @@ public class ViewPagerAdapter extends FragmentStateAdapter {
             }
 
             if (isValid) {
+                save_btn.setEnabled(false);
+
                 // Payment method setting
                 String pmt_method;
                 if (card_or_cash.getCheckedRadioButtonId() == R.id.r_card)
@@ -243,6 +245,16 @@ public class ViewPagerAdapter extends FragmentStateAdapter {
 
                 // Transaction setting
                 float transactionAmount = Float.parseFloat(amount.getText().toString());
+                String frequency = repeat.getText().toString().toLowerCase();
+                float fixed_income = 0.0F;
+                switch (repeat.getText().toString()) {
+                    case "Not repeated": frequency = "once"; break;
+                    case "Daily": fixed_income = transactionAmount*30; break;
+                    case "Weekly": fixed_income = transactionAmount*4; break;
+                    case "Monthly": fixed_income = transactionAmount; break;
+                    case "Yearly": fixed_income = transactionAmount/12; break;
+                }
+
                 Transaction transaction = new Transaction();
                 transaction.setType(isExpense ? "expense" : "income");
                 transaction.setAmount(transactionAmount);
@@ -250,9 +262,11 @@ public class ViewPagerAdapter extends FragmentStateAdapter {
                 transaction.setNote(note.getText().toString());
                 transaction.setDate(dateInfos[0], dateInfos[1], dateInfos[2], dateInfos[3], dateInfos[4]);
                 transaction.setMethod(pmt_method);
+                transaction.setFrequency(frequency);
+                if (!"once".equals(frequency))
+                    transaction.setLastExecuted(dateInfos[0], dateInfos[1], dateInfos[2], dateInfos[3], dateInfos[4]);
 
                 DocumentReference userRef = db.collection("Users").document(user.getUid());
-
                 // Save transaction in FirestoreFirebase
                 userRef.collection("Transactions").add(transaction)
                     .addOnSuccessListener(documentReference -> Log.d("SaveTransaction", "Saved transaction with ID: " + documentReference.getId() + " | Category " + transaction.getCategory()))
@@ -260,6 +274,7 @@ public class ViewPagerAdapter extends FragmentStateAdapter {
 
                 // Update Balance
                 isFixed = !repeat.getText().toString().equals("Not repeated");
+                float finalFixed_income = fixed_income;
                 db.runTransaction((com.google.firebase.firestore.Transaction.Function<Void>) firestoreTransaction -> {
                     DocumentSnapshot snapshot = firestoreTransaction.get(userRef);
 
@@ -280,23 +295,13 @@ public class ViewPagerAdapter extends FragmentStateAdapter {
                     if (isFixed) {
                         Map<String, Object> fixedIncomeMap = (Map<String, Object>) snapshot.get("Balances.fixed_income");
 
-                        float fixed_income = 0.0F;
-                        switch (repeat.getText().toString()) {
-                            case "Not repeated": break;
-                            case "Daily": fixed_income = transactionAmount*30; break;
-                            case "Weekly": fixed_income = transactionAmount*4; break;
-                            case "Monthly": fixed_income = transactionAmount; break;
-                            case "Yearly": fixed_income = transactionAmount/12; break;
-                        }
-
                         if (fixedIncomeMap != null) {
                             Number oldFixedIncome = (Number) fixedIncomeMap.get("value_monthly");
 
                             float currentFixedIncome = oldFixedIncome != null ? oldFixedIncome.floatValue() : 0f;
-
                             float newFixedIncome = isExpense
-                                    ? currentFixedIncome - fixed_income
-                                    : currentFixedIncome + fixed_income;
+                                    ? currentFixedIncome - finalFixed_income
+                                    : currentFixedIncome + finalFixed_income;
 
                             firestoreTransaction.update(userRef, "Balances.fixed_income.value_monthly", newFixedIncome);
                         }

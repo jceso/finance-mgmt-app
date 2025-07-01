@@ -30,11 +30,19 @@ import java.util.Objects;
 public class PieChartFragment extends Fragment {
     private DocumentReference userRef;
     private PieChart pieChart;
+    private Boolean isExpense = false;
+    private Boolean favOption = false;
 
     public PieChartFragment() { }
 
     public PieChartFragment(FirebaseFirestore fStore, String userId) {
         this.userRef = fStore.collection("Users").document(userId);
+    }
+
+    public PieChartFragment(FirebaseFirestore fStore, String userId, Boolean isExpense, Boolean favOption) {
+        this.userRef = fStore.collection("Users").document(userId);
+        this.isExpense = isExpense;
+        this.favOption = favOption;
     }
 
     @Nullable
@@ -71,11 +79,16 @@ public class PieChartFragment extends Fragment {
 
             // Get favorite categories
             Map<String, Object> categories = (Map<String, Object>) userDoc.get("categories");
-            List<String> favoriteCategories = new ArrayList<>();
+            List<String> selectedCategories = new ArrayList<>();
             for (Map.Entry<String, Object> entry : Objects.requireNonNull(categories).entrySet()) {
                 Map<String, Object> category = (Map<String, Object>) entry.getValue();
-                if (Boolean.TRUE.equals(category.get("fav")) && "expense".equals(category.get("type")))
-                    favoriteCategories.add(entry.getKey());
+
+                // Get favourite expenses/incomes only if favOption is true
+                boolean typeTransaction = isExpense ? "expense".equals(category.get("type")) : "income".equals(category.get("type"));
+                boolean isFav = Boolean.TRUE.equals(category.get("fav"));
+
+                if (typeTransaction && (!favOption || isFav))
+                    selectedCategories.add(entry.getKey());
             }
 
             // Fetch all expense transactions for the current month
@@ -85,11 +98,10 @@ public class PieChartFragment extends Fragment {
                     Map<String, Float> categorySums = new HashMap<>();
 
                     for (QueryDocumentSnapshot doc : querySnapshot) {
-                        String type = doc.getString("type");
                         String category = doc.getString("category");
                         Number amount = doc.getDouble("amount");
 
-                        if ("expense".equals(type) && favoriteCategories.contains(category) && amount != null)
+                        if (selectedCategories.contains(category) && amount != null)
                             categorySums.put(category, categorySums.getOrDefault(category, 0f) + amount.floatValue());
                         Log.d("PieChart Debug", "Category: " + category + ", Amount: " + amount + " | Category sums: " + categorySums);
                     }

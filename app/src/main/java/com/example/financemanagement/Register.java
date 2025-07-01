@@ -108,7 +108,7 @@ public class Register extends AppCompatActivity {
                         Map<String, Object> balances = new HashMap<>();
 
                         Map<String, Object> fixedIncome = new HashMap<>();
-                        fixedIncome.put("save_perc", 15);
+                        fixedIncome.put("save_perc", .3);   // 30% del restante 45% di spesa variabile (circa 15% di tutto)
                         fixedIncome.put("value_monthly", 0);
                         balances.put("fixed_income", fixedIncome);
 

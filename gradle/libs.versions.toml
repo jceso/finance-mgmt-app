@@ -12,6 +12,7 @@ circindicator = "2.1.6"
 googleGmsGoogleServices = "4.4.2"
 firebaseFirestore = "25.1.3"
 firebaseAuth = "23.2.0"
+firebaseRecycler = "8.0.2"
 credentials = "1.5.0"
 credentialsPlayServicesAuth = "1.5.0"
 googleid = "1.1.1"
@@ -28,6 +29,7 @@ mpachart = { group = "com.github.PhilJay", name = "MPAndroidChart", version.ref 
 circleindicator = { group = "me.relex", name = "circleindicator", version.ref = "circindicator" }
 firebase-firestore = { group = "com.google.firebase", name = "firebase-firestore", version.ref = "firebaseFirestore" }
 firebase-auth = { group = "com.google.firebase", name = "firebase-auth", version.ref = "firebaseAuth" }
+firebase-recycler = { group = "com.firebaseui", name = "firebase-ui-firestore", version.ref = "firebaseRecycler" }
 credentials = { group = "androidx.credentials", name = "credentials", version.ref = "credentials" }
 credentials-play-services-auth = { group = "androidx.credentials", name = "credentials-play-services-auth", version.ref = "credentialsPlayServicesAuth" }
 googleid = { group = "com.google.android.libraries.identity.googleid", name = "googleid", version.ref = "googleid" }

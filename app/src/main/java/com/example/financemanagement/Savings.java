@@ -1,9 +1,9 @@
 package com.example.financemanagement;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
@@ -18,13 +18,16 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.util.Locale;
 import java.util.Map;
-import java.util.Objects;
 
 public class Savings extends AppCompatActivity {
     private FirebaseFirestore fStore;
     private FirebaseUser user;
-    private TextView amount, perc, savings_amount, fixed_income;
+    private float currIncomes;
+    private TextView perc;
+    private TextView thCurrSavings;
+    private TextView monthlyIncome;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,16 +40,36 @@ public class Savings extends AppCompatActivity {
             return insets;
         });
 
+        // Initial setting
         CommonFeatures.initialSettings(this);
         CommonFeatures.setBackToHome(this, this, getOnBackPressedDispatcher());
         fStore = FirebaseFirestore.getInstance();
         user = FirebaseAuth.getInstance().getCurrentUser();
+        currIncomes = getIntent().getFloatExtra("curr_incomes", 0);
+        float currExpenses = getIntent().getFloatExtra("curr_expenses", 0);
 
-
-        amount = findViewById(R.id.amount);
+        // Set basic buttons
+        LinearLayout summary = findViewById(R.id.summary);
+        ImageView pig = findViewById(R.id.pig);
+        TextView currSavings = findViewById(R.id.curr_savings);
+        currSavings.setText(String.format(Locale.getDefault(), "€%.2f", (currIncomes-currExpenses)));
+        monthlyIncome = findViewById(R.id.monthly_income);
         perc = findViewById(R.id.perc);
-        savings_amount = findViewById(R.id.savings_amount);
-        fixed_income = findViewById(R.id.fixed_income);
+        thCurrSavings = findViewById(R.id.th_curr_savings);
+        if (currIncomes-currExpenses < 0) {
+            summary.setBackgroundResource(R.drawable.rounded_negative);
+            pig.setImageResource(R.drawable.pig_sad_original);
+        } else {
+            summary.setBackgroundResource(R.drawable.rounded_positive);
+            pig.setImageResource(R.drawable.pig_happy);
+        }
+
+        summarySetting();
+
+        Log.d("Savings", "Savings activity after FireStore call");
+    }
+
+    private void summarySetting() {
         DocumentReference userDocRef = fStore.collection("Users").document(user.getUid());
 
         userDocRef.get().addOnSuccessListener(documentSnapshot -> {
@@ -55,30 +78,21 @@ public class Savings extends AppCompatActivity {
                 if (balances != null) {
                     Map<String, Object> fixedIncome = (Map<String, Object>) balances.get("fixed_income");
 
+                    // Retrieve fixed income by database
                     if (fixedIncome != null) {
-                        Log.d("Savings", "Fixed Income: " + fixedIncome);
-
                         Long savePercLong = (Long) fixedIncome.get("save_perc");
-                        Double valueMonthlyDouble = (Double) fixedIncome.get("value_monthly");
-
                         int savePerc = savePercLong != null ? savePercLong.intValue() : 0;
-                        float valueMonthly = valueMonthlyDouble != null ? valueMonthlyDouble.floatValue() : 0f;
-                        Log.d("Savings", "save_perc: " + savePerc + " | value_monthly: " + valueMonthly);
-                        String percText = savePerc + "%";
-                        String savingsAmountText = "Your savings should be ";
+                        Log.d("Savings", "Fixed Income: " + fixedIncome + " | Save percentage: " + savePerc + "%");
 
-                        perc.setText(percText);
-                        savings_amount.setText(String.format("It should be €%s", String.format("%.2f", (savePerc / 100f) * valueMonthly)));
-                        fixed_income.setText(String.format("Because fixed income is €%s", String.format("%.2f", valueMonthly)));
+                        perc.setText(String.format(Locale.getDefault(), "%d%%", savePerc));
+                        thCurrSavings.setText(String.format("%s %s", getString(R.string.curr_savings), String.format(Locale.getDefault(), "€%.2f", (currIncomes/100) * savePerc)));
+                        monthlyIncome.setText(String.format("%s %s", getString(R.string.monthly_income), String.format(Locale.getDefault(), "€%.2f", currIncomes)));
                     } else
-                        Log.d("Savings", "Campo 'fixed_income' non trovato in 'Balances'");
+                        Log.d("Savings", "Property 'fixed_income' not found in 'Balances'");
                 } else
-                    Log.d("Savings", "Campo 'Balances' non trovato");
+                    Log.d("Savings", "Property 'Balances' not found");
             } else
-                Log.d("Savings", "Documento utente non trovato");
-        }).addOnFailureListener(e -> Log.e("Savings", "Errore nel recupero del documento", e));
-
-
-        Log.d("Savings", "Savings activity after FireStore call");
+                Log.d("Savings", "User infos not found");
+        }).addOnFailureListener(e -> Log.e("Savings", "Error in fetching data", e));
     }
 }

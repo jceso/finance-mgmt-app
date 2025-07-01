@@ -7,24 +7,24 @@
     android:layout_height="match_parent"
     tools:context=".Savings">
 
-    <include layout="@layout/header" /><include layout="@layout/header" />
+    <include android:id="@+id/header" layout="@layout/header" />
 
     <LinearLayout
         android:id="@+id/summary"
         android:layout_width="match_parent"
         android:layout_height="200dp"
         android:layout_marginHorizontal="15dp"
-        android:layout_marginTop="130dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        android:background="@drawable/rounded_positive">
+        app:layout_constraintTop_toBottomOf="@id/header"
+        android:background="@drawable/rounded_light">
 
         <ImageView
             android:id="@+id/pig"
             android:layout_width="140dp"
             android:layout_height="match_parent"
-            android:src="@drawable/pig_happy"
+            android:contentDescription="@string/pig_desc"
+            android:src="@drawable/ic_launcher_foreground"
             android:layout_weight="1"/>
 
         <RelativeLayout
@@ -34,7 +34,7 @@
             android:layout_weight="6" >
 
             <TextView
-                android:id="@+id/amount"
+                android:id="@+id/curr_savings"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentStart="true"
@@ -46,22 +46,22 @@
                 android:textSize="50sp" />
 
             <TextView
-                android:id="@+id/text_amount"
+                android:id="@+id/text_curr_savings"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_below="@+id/amount"
+                android:layout_below="@+id/curr_savings"
                 android:layout_alignParentStart="true"
                 android:layout_alignParentEnd="true"
                 android:layout_marginStart="25dp"
                 android:layout_marginEnd="15dp"
-                android:text="of your monthly income"
+                android:text="@string/of_monthly_income"
                 android:textSize="15sp" />
 
             <TextView
                 android:id="@+id/perc"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_below="@+id/text_amount"
+                android:layout_below="@+id/text_curr_savings"
                 android:layout_alignParentStart="true"
                 android:layout_alignParentEnd="true"
                 android:layout_marginStart="30dp"
@@ -80,7 +80,7 @@
                 android:layout_alignParentEnd="true"
                 android:layout_marginStart="35dp"
                 android:layout_marginEnd="25dp"
-                android:text="of your monthly income"
+                android:text="@string/of_monthly_income"
                 android:textSize="12sp" />
 
         </RelativeLayout>
@@ -105,16 +105,18 @@
         tools:layout_editor_absoluteX="40dp" >
 
         <TextView
+            android:id="@+id/th_curr_savings"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Your savings should be ..."
-            android:textSize="18dp" />
+            android:text="@string/curr_savings"
+            android:textSize="18sp" />
 
         <TextView
+            android:id="@+id/monthly_income"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Because your fixed income is ..."
-            android:textSize="18dp" />
+            android:text="@string/monthly_income"
+            android:textSize="18sp" />
     </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView
@@ -133,12 +135,12 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:layout_constraintBottom_toBottomOf="parent"
-        android:layout_marginVertical="20dp"
-        android:layout_marginHorizontal="50dp"
+        android:layout_marginVertical="15dp"
+        android:layout_marginHorizontal="40dp"
         android:padding="15dp"
-        android:text="Change percentage"
+        android:text="@string/change_percentage"
         android:fontFamily="@font/hornbill_black"
-        android:textSize="20sp"
+        android:textSize="22sp"
         style="@style/Button" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

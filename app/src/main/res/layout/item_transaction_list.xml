@@ -1,29 +1,52 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:padding="12dp"
-    android:orientation="vertical">
+    android:layout_height="wrap_content"
+    android:paddingVertical="10dp"
+    android:paddingHorizontal="5dp"
+    android:gravity="center_vertical" >
 
-    <TextView
-        android:id="@+id/transaction_category"
-        android:layout_width="match_parent"
+    <ImageView
+        android:id="@+id/ctg_icon"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Category"
-        android:textSize="16sp"
-        android:textStyle="bold" />
+        android:src="@drawable/category_general"
+        android:layout_centerVertical="true" />
 
-    <TextView
-        android:id="@+id/transaction_date"
-        android:layout_width="match_parent"
+    <LinearLayout
+        android:id="@+id/linearLayout2"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Date" />
+        android:layout_toStartOf="@+id/transaction_amount"
+        android:layout_toEndOf="@+id/ctg_icon"
+        android:layout_marginHorizontal="10dp"
+        android:orientation="vertical" >
+
+        <TextView
+            android:id="@+id/transaction_category"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingHorizontal="5dp"
+            android:text="Category"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/transaction_date"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Date"
+            android:textColor="@color/grey_dark"/>
+
+    </LinearLayout>
 
     <TextView
         android:id="@+id/transaction_amount"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
         android:text="Amount"
-        android:textColor="#FF5722" />
+        android:textColor="@color/grey"
+        android:layout_centerVertical="true" /> <!-- #FF5722 -->
 
-</LinearLayout>
+</RelativeLayout>
