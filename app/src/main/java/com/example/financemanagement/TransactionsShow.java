@@ -42,6 +42,7 @@ import me.relex.circleindicator.CircleIndicator3;
 public class TransactionsShow extends AppCompatActivity {
     private static FirebaseUser user;
     private static FirebaseFirestore db;
+    private static String transactionsMethod;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,10 +63,10 @@ public class TransactionsShow extends AppCompatActivity {
         // Get the type of transactions to show
         TextView type = findViewById(R.id.type);
         TextView amount = findViewById(R.id.amount);
-        String transactionsType = getIntent().getStringExtra("type");
+        transactionsMethod = getIntent().getStringExtra("type");
         String moneyAmount = getIntent().getStringExtra("money");
-        Log.d("TransactionsShow", "Transactions type: " + transactionsType + ", Money: " + moneyAmount);
-        type.setText(!Objects.equals(transactionsType, "credit_card") ? "Cash" : "Card");
+        Log.d("TransactionsShow", "Transactions type: " + transactionsMethod + ", Money: " + moneyAmount);
+        type.setText(!Objects.equals(transactionsMethod, "credit_card") ? "Cash" : "Card");
         amount.setText(moneyAmount);
 
         // Initialize the ViewPager2
@@ -91,6 +92,7 @@ public class TransactionsShow extends AppCompatActivity {
         Query query = db.collection("Users")
             .document(user.getUid())
             .collection("Transactions")
+            .whereEqualTo("method", transactionsMethod)
             .orderBy(orderByField, Query.Direction.DESCENDING);
 
         FirestoreRecyclerOptions<Transaction> options = new FirestoreRecyclerOptions.Builder<Transaction>()

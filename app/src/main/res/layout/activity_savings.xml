@@ -21,7 +21,7 @@
 
         <ImageView
             android:id="@+id/pig"
-            android:layout_width="140dp"
+            android:layout_width="160dp"
             android:layout_height="match_parent"
             android:contentDescription="@string/pig_desc"
             android:src="@drawable/ic_launcher_foreground"
@@ -63,25 +63,24 @@
                 android:layout_height="wrap_content"
                 android:layout_below="@+id/text_curr_savings"
                 android:layout_alignParentStart="true"
-                android:layout_alignParentEnd="true"
-                android:layout_marginStart="30dp"
-                android:layout_marginEnd="25dp"
+                android:layout_marginStart="40dp"
                 android:layout_marginTop="20dp"
                 android:fontFamily="@font/cs_boline_edited"
                 android:text="Perc"
-                android:textSize="30sp" />
+                android:textSize="35sp" />
 
             <TextView
                 android:id="@+id/text_perc"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_below="@id/perc"
-                android:layout_alignParentStart="true"
+                android:layout_below="@+id/text_curr_savings"
                 android:layout_alignParentEnd="true"
-                android:layout_marginStart="35dp"
-                android:layout_marginEnd="25dp"
+                android:layout_marginStart="5dp"
+                android:layout_marginEnd="50dp"
+                android:layout_marginTop="30dp"
+                android:layout_toEndOf="@+id/perc"
                 android:text="@string/of_monthly_income"
-                android:textSize="12sp" />
+                android:textSize="11sp" />
 
         </RelativeLayout>
     </LinearLayout>

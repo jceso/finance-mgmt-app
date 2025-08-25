@@ -64,8 +64,7 @@ public class ViewPagerAdapter extends FragmentStateAdapter {
     public static class IncomeFragment extends Fragment {
 
         @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                                 Bundle savedInstanceState) {
+        public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
             View view = inflater.inflate(R.layout.fgmt_inc_exp, container, false);
 
             Button income_btn = view.findViewById(R.id.income_btn);

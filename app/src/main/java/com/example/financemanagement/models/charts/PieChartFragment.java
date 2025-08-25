@@ -32,11 +32,13 @@ public class PieChartFragment extends Fragment {
     private PieChart pieChart;
     private Boolean isExpense = false;
     private Boolean favOption = false;
+    private String method;
 
     public PieChartFragment() { }
 
-    public PieChartFragment(FirebaseFirestore fStore, String userId) {
+    public PieChartFragment(FirebaseFirestore fStore, String userId, String method) {
         this.userRef = fStore.collection("Users").document(userId);
+        this.method = method;
     }
 
     public PieChartFragment(FirebaseFirestore fStore, String userId, Boolean isExpense, Boolean favOption) {

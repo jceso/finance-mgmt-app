@@ -19,9 +19,11 @@ import com.example.financemanagement.R;
 import com.example.financemanagement.Savings;
 import com.example.financemanagement.Settings;
 import com.example.financemanagement.UserProfile;
+import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
 
 public class CommonFeatures {
     private static long lastBackPressedTime = 0;
@@ -116,5 +118,30 @@ public class CommonFeatures {
         context.startActivity(new Intent(context, Login.class));
         if (context instanceof Activity)
             ((Activity) context).finish();
+    }
+
+    public static FirestoreRecyclerOptions<Transaction> getTransactions(String orderByField, LifecycleOwner lcOwner, String transactionsMethod, String order) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+
+        if (transactionsMethod.equals("savings")) {
+            Query query = db.collection("Users")
+                .document(user.getUid())
+                .collection("Transactions")
+                .whereEqualTo("method", transactionsMethod)
+                .orderBy(orderByField, Query.Direction.DESCENDING);
+        }
+
+
+        Query query = db.collection("Users")
+                .document(user.getUid())
+                .collection("Transactions")
+                .whereEqualTo("method", transactionsMethod)
+                .orderBy(orderByField, Query.Direction.DESCENDING);
+
+        FirestoreRecyclerOptions<Transaction> options = new FirestoreRecyclerOptions.Builder<Transaction>()
+                .setQuery(query, Transaction.class).setLifecycleOwner(lcOwner).build();
+
+        return options;
     }
 }
