@@ -244,20 +244,20 @@ public class Home extends AppCompatActivity {
 
                     // 3. Calculate totals
                     incTotal = (float) (fixedIncome + monthlyVarInc);
-                    float currTheoreticalSavings = (float) (((double) savePerc /100)*incTotal);
-                    float maxCurExpenses = incTotal - currTheoreticalSavings;
+                    float currSavings = (float) (((double) savePerc /100)*incTotal);
+                    float maxCurExpenses = incTotal - currSavings;
                     Log.d("HomeSavings", "Totale guadagni variabili: " + monthlyVarInc + " | Risparmio fisso: " + fixedIncome + " | Risparmio netto: " + incTotal);
                     Log.d("HomeSavings", "Risparmio del " + savePerc + "% | Si possono spendere " + maxCurExpenses + " euro");
 
                     // 4. Modify pig image
                     ImageView pigImage = findViewById(R.id.summary);
                     if (monthlyVarExp > maxCurExpenses) {
-                        Log.d("HomeSavings", "Hai sprecato soldi, hai rotto il porco :(\n  Questo mese avevi " + incTotal + " di guadagno, ma hai speso " + monthlyVarExp + "\n  Ti restano " + (incTotal-monthlyVarExp) + " rispetto al risparmio teorico di " + currTheoreticalSavings);
+                        Log.d("HomeSavings", "Hai sprecato soldi, hai rotto il porco :(\n  Questo mese avevi " + incTotal + " di guadagno, ma hai speso " + monthlyVarExp + "\n  Ti restano " + (incTotal-monthlyVarExp) + " rispetto al risparmio teorico di " + currSavings);
 
                         pigImage.setBackgroundResource(R.drawable.pig_mood_sad);
                         pigImage.setImageResource(R.drawable.pig_sad_original);
                     } else {
-                        Log.d("HomeSavings", "Hai risparmiato soldi, il porco è salvo :)\n  Questo mese avevi " + incTotal + " di guadagno e hai speso " + monthlyVarExp + "\n  Ti restano " + (incTotal-monthlyVarExp) + " rispetto al risparmio teorico di " + currTheoreticalSavings);
+                        Log.d("HomeSavings", "Hai risparmiato soldi, il porco è salvo :)\n  Questo mese avevi " + incTotal + " di guadagno e hai speso " + monthlyVarExp + "\n  Ti restano " + (incTotal-monthlyVarExp) + " rispetto al risparmio teorico di " + currSavings);
 
                         pigImage.setBackgroundResource(R.drawable.pig_mood_happy);
                         pigImage.setImageResource(R.drawable.pig_happy);

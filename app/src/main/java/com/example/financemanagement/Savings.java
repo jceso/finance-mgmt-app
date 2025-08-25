@@ -1,7 +1,9 @@
 package com.example.financemanagement;
 
+import android.app.Activity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -11,12 +13,19 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.lifecycle.LifecycleOwner;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.financemanagement.models.CommonFeatures;
+import com.example.financemanagement.models.Transaction;
+import com.example.financemanagement.models.TransactionAdapter;
+import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
 
 import java.util.Locale;
 import java.util.Map;
@@ -24,7 +33,7 @@ import java.util.Map;
 public class Savings extends AppCompatActivity {
     private FirebaseFirestore fStore;
     private FirebaseUser user;
-    private float currIncomes;
+    private float currIncomes, currExpenses;
     private TextView perc;
     private TextView thCurrSavings;
     private TextView monthlyIncome;
@@ -46,31 +55,50 @@ public class Savings extends AppCompatActivity {
         fStore = FirebaseFirestore.getInstance();
         user = FirebaseAuth.getInstance().getCurrentUser();
         currIncomes = getIntent().getFloatExtra("curr_incomes", 0);
-        float currExpenses = getIntent().getFloatExtra("curr_expenses", 0);
+        currExpenses = getIntent().getFloatExtra("curr_expenses", 0);
 
         // Set basic buttons
-        LinearLayout summary = findViewById(R.id.summary);
-        ImageView pig = findViewById(R.id.pig);
-        TextView currSavings = findViewById(R.id.curr_savings);
-        currSavings.setText(String.format(Locale.getDefault(), "€%.2f", (currIncomes-currExpenses)));
-        monthlyIncome = findViewById(R.id.monthly_income);
-        perc = findViewById(R.id.perc);
-        thCurrSavings = findViewById(R.id.th_curr_savings);
-        if (currIncomes-currExpenses < 0) {
-            summary.setBackgroundResource(R.drawable.rounded_negative);
-            pig.setImageResource(R.drawable.pig_sad_original);
-        } else {
-            summary.setBackgroundResource(R.drawable.rounded_positive);
-            pig.setImageResource(R.drawable.pig_happy);
-        }
-
         summarySetting();
 
         Log.d("Savings", "Savings activity after FireStore call");
     }
 
     private void summarySetting() {
+        LinearLayout summary = findViewById(R.id.summary);
+        ImageView pigImage = findViewById(R.id.pig);
+        TextView currSavings = findViewById(R.id.curr_savings);
+        perc = findViewById(R.id.perc);
+        monthlyIncome = findViewById(R.id.monthly_income);
+        thCurrSavings = findViewById(R.id.th_curr_savings);
+
         DocumentReference userDocRef = fStore.collection("Users").document(user.getUid());
+
+        userDocRef.get().addOnSuccessListener(documentSnapshot -> {
+            if (documentSnapshot.exists()) {
+                Long savePercLong = documentSnapshot.getLong("Balances.save_perc");
+                int savePerc = savePercLong != null ? savePercLong.intValue() : 0;
+                float calcSavings = (float) (((double) savePerc/100)*currIncomes);
+                float maxCurExpenses = currIncomes - calcSavings;
+                Log.d("Savings", "Save percentage: " + savePerc + "%");
+
+                currSavings.setText(String.format(Locale.getDefault(), "€%.2f", (currIncomes-currExpenses)));
+                perc.setText(String.format(Locale.getDefault(), "%d%%", savePerc));
+                thCurrSavings.setText(String.format("%s %s", getString(R.string.curr_savings), String.format(Locale.getDefault(), "€%.2f", calcSavings)));
+                monthlyIncome.setText(String.format("%s %s", getString(R.string.monthly_income), String.format(Locale.getDefault(), "€%.2f", currIncomes)));
+
+                if (currExpenses > maxCurExpenses) {
+                    Log.d("HomeSavings", "Hai sprecato soldi, hai rotto il porco :(\n  Questo mese avevi " + currIncomes + " di guadagno, ma hai speso " + currExpenses + "\n  Ti restano " + (currIncomes-currExpenses) + " rispetto al risparmio teorico di " + calcSavings);
+
+                    pigImage.setBackgroundResource(R.drawable.pig_mood_sad);
+                    pigImage.setImageResource(R.drawable.pig_sad_original);
+                } else {
+                    Log.d("HomeSavings", "Hai risparmiato soldi, il porco è salvo :)\n  Questo mese avevi " + currIncomes + " di guadagno e hai speso " + currExpenses + "\n  Ti restano " + (currIncomes-currExpenses) + " rispetto al risparmio teorico di " + calcSavings);
+
+                    pigImage.setBackgroundResource(R.drawable.pig_mood_happy);
+                    pigImage.setImageResource(R.drawable.pig_happy);
+                }
+            }
+        });
 
         userDocRef.get().addOnSuccessListener(documentSnapshot -> {
             if (documentSnapshot.exists()) {
@@ -94,5 +122,18 @@ public class Savings extends AppCompatActivity {
             } else
                 Log.d("Savings", "User infos not found");
         }).addOnFailureListener(e -> Log.e("Savings", "Error in fetching data", e));
+    }
+
+    private static void getTransactions(String orderByField, LifecycleOwner lcOwner, Activity activity) {
+        TransactionAdapter adapter = new TransactionAdapter(CommonFeatures.getTransactions(orderByField, lcOwner, "savings", "date"));
+        RecyclerView recyclerView = activity.findViewById(R.id.recycler_view);
+        recyclerView.setLayoutManager(new LinearLayoutManager(activity));
+        recyclerView.setAdapter(adapter);
+
+        TextView emptyList = activity.findViewById(R.id.empty_list);
+        if (adapter.getItemCount() == 0)
+            emptyList.setVisibility(View.GONE);
+        else
+            emptyList.setVisibility(View.VISIBLE);
     }
 }
