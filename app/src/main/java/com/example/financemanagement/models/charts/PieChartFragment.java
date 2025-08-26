@@ -36,9 +36,8 @@ public class PieChartFragment extends Fragment {
 
     public PieChartFragment() { }
 
-    public PieChartFragment(FirebaseFirestore fStore, String userId, String method) {
+    public PieChartFragment(FirebaseFirestore fStore, String userId) {
         this.userRef = fStore.collection("Users").document(userId);
-        this.method = method;
     }
 
     public PieChartFragment(FirebaseFirestore fStore, String userId, Boolean isExpense, Boolean favOption) {

@@ -4,12 +4,17 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.AppCompatImageButton;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -28,10 +33,9 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 
 import java.util.Locale;
-import java.util.Map;
 
 public class Savings extends AppCompatActivity {
-    private FirebaseFirestore fStore;
+    private static DocumentReference userDocRef;
     private FirebaseUser user;
     private float currIncomes, currExpenses;
     private TextView perc;
@@ -52,14 +56,16 @@ public class Savings extends AppCompatActivity {
         // Initial setting
         CommonFeatures.initialSettings(this);
         CommonFeatures.setBackToHome(this, this, getOnBackPressedDispatcher());
-        fStore = FirebaseFirestore.getInstance();
         user = FirebaseAuth.getInstance().getCurrentUser();
+        userDocRef = FirebaseFirestore.getInstance().collection("Users").document(user.getUid());
         currIncomes = getIntent().getFloatExtra("curr_incomes", 0);
         currExpenses = getIntent().getFloatExtra("curr_expenses", 0);
 
-        // Set basic buttons
         summarySetting();
+        getTransactions(this, this);
 
+        Button change = findViewById(R.id.change);
+        change.setOnClickListener(v -> showDialog());
         Log.d("Savings", "Savings activity after FireStore call");
     }
 
@@ -70,8 +76,6 @@ public class Savings extends AppCompatActivity {
         perc = findViewById(R.id.perc);
         monthlyIncome = findViewById(R.id.monthly_income);
         thCurrSavings = findViewById(R.id.th_curr_savings);
-
-        DocumentReference userDocRef = fStore.collection("Users").document(user.getUid());
 
         userDocRef.get().addOnSuccessListener(documentSnapshot -> {
             if (documentSnapshot.exists()) {
@@ -89,43 +93,20 @@ public class Savings extends AppCompatActivity {
                 if (currExpenses > maxCurExpenses) {
                     Log.d("HomeSavings", "Hai sprecato soldi, hai rotto il porco :(\n  Questo mese avevi " + currIncomes + " di guadagno, ma hai speso " + currExpenses + "\n  Ti restano " + (currIncomes-currExpenses) + " rispetto al risparmio teorico di " + calcSavings);
 
-                    pigImage.setBackgroundResource(R.drawable.pig_mood_sad);
+                    summary.setBackgroundResource(R.drawable.rounded_negative);
                     pigImage.setImageResource(R.drawable.pig_sad_original);
                 } else {
                     Log.d("HomeSavings", "Hai risparmiato soldi, il porco è salvo :)\n  Questo mese avevi " + currIncomes + " di guadagno e hai speso " + currExpenses + "\n  Ti restano " + (currIncomes-currExpenses) + " rispetto al risparmio teorico di " + calcSavings);
 
-                    pigImage.setBackgroundResource(R.drawable.pig_mood_happy);
+                    summary.setBackgroundResource(R.drawable.rounded_positive);
                     pigImage.setImageResource(R.drawable.pig_happy);
                 }
             }
         });
-
-        userDocRef.get().addOnSuccessListener(documentSnapshot -> {
-            if (documentSnapshot.exists()) {
-                Map<String, Object> balances = (Map<String, Object>) documentSnapshot.get("Balances");
-                if (balances != null) {
-                    Map<String, Object> fixedIncome = (Map<String, Object>) balances.get("fixed_income");
-
-                    // Retrieve fixed income by database
-                    if (fixedIncome != null) {
-                        Long savePercLong = (Long) fixedIncome.get("save_perc");
-                        int savePerc = savePercLong != null ? savePercLong.intValue() : 0;
-                        Log.d("Savings", "Fixed Income: " + fixedIncome + " | Save percentage: " + savePerc + "%");
-
-                        perc.setText(String.format(Locale.getDefault(), "%d%%", savePerc));
-                        thCurrSavings.setText(String.format("%s %s", getString(R.string.curr_savings), String.format(Locale.getDefault(), "€%.2f", (currIncomes/100) * savePerc)));
-                        monthlyIncome.setText(String.format("%s %s", getString(R.string.monthly_income), String.format(Locale.getDefault(), "€%.2f", currIncomes)));
-                    } else
-                        Log.d("Savings", "Property 'fixed_income' not found in 'Balances'");
-                } else
-                    Log.d("Savings", "Property 'Balances' not found");
-            } else
-                Log.d("Savings", "User infos not found");
-        }).addOnFailureListener(e -> Log.e("Savings", "Error in fetching data", e));
     }
 
-    private static void getTransactions(String orderByField, LifecycleOwner lcOwner, Activity activity) {
-        TransactionAdapter adapter = new TransactionAdapter(CommonFeatures.getTransactions(orderByField, lcOwner, "savings", "date"));
+    private static void getTransactions(LifecycleOwner lcOwner, Activity activity) {
+        TransactionAdapter adapter = new TransactionAdapter(CommonFeatures.getTransactions("date", lcOwner, "savings"));
         RecyclerView recyclerView = activity.findViewById(R.id.recycler_view);
         recyclerView.setLayoutManager(new LinearLayoutManager(activity));
         recyclerView.setAdapter(adapter);
@@ -135,5 +116,35 @@ public class Savings extends AppCompatActivity {
             emptyList.setVisibility(View.GONE);
         else
             emptyList.setVisibility(View.VISIBLE);
+    }
+
+    private void showDialog() {
+        // Inflate the custom layout from XML
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_edit_perc, null);
+        builder.setView(dialogView);
+
+        EditText amountEditText = dialogView.findViewById(R.id.perc);
+        Button editButton = dialogView.findViewById(R.id.edit_btn);
+        AppCompatImageButton cancelButton = dialogView.findViewById(R.id.cancel_btn);
+
+        // Create and show the dialog
+        AlertDialog dialog = builder.create();
+        cancelButton.setOnClickListener(v -> dialog.dismiss());
+        dialog.show();
+
+        // "Edit" button updates the value in Firestore
+        editButton.setOnClickListener(v -> {
+            String amountStr = amountEditText.getText().toString().trim();
+            if (!amountStr.isEmpty()) {
+                Integer percValue = Integer.valueOf(amountStr);
+                userDocRef.update("Balances.save_perc", percValue)
+                    .addOnSuccessListener(aVoid -> Log.d("Firestore", "save_perc aggiornato con successo"))
+                    .addOnFailureListener(e -> Log.e("Firestore", "Errore nell'aggiornamento: " + e.getMessage()));
+
+                dialog.dismiss();
+            } else  // Show an error message if the input is empty
+                Toast.makeText(Savings.this, "Insert a valid amount", Toast.LENGTH_SHORT).show();
+        });
     }
 }

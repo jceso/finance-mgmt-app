@@ -93,7 +93,6 @@ public class Settings extends AppCompatActivity {
          * Local Notifications in Android - The Full Guide (Android Studio Tutorial):
          * https://www.youtube.com/watch?v=LP623htmWcI
          * */
-
     }
 
     private void showDialog(String type) {
@@ -118,7 +117,7 @@ public class Settings extends AppCompatActivity {
         cancelButton.setOnClickListener(v -> dialog.dismiss());
         dialog.show();
 
-        // Set an onClickListener for the "Edit" button (you can handle the functionality here)
+        // Set an onClickListener for the "Edit" button
         editButton.setOnClickListener(v -> {
             String amountStr = amountEditText.getText().toString().trim();
             if (!amountStr.isEmpty()) {

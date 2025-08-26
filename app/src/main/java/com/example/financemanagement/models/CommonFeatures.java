@@ -120,24 +120,24 @@ public class CommonFeatures {
             ((Activity) context).finish();
     }
 
-    public static FirestoreRecyclerOptions<Transaction> getTransactions(String orderByField, LifecycleOwner lcOwner, String transactionsMethod, String order) {
+    public static FirestoreRecyclerOptions<Transaction> getTransactions(String orderByField, LifecycleOwner lcOwner, String transactionsMethod) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        Query query;
 
         if (transactionsMethod.equals("savings")) {
-            Query query = db.collection("Users")
+            query = db.collection("Users")
+                .document(user.getUid())
+                .collection("Transactions")
+                .whereNotEqualTo("frequency", "Not repeated")
+                .orderBy(orderByField, Query.Direction.DESCENDING);
+        } else {
+            query = db.collection("Users")
                 .document(user.getUid())
                 .collection("Transactions")
                 .whereEqualTo("method", transactionsMethod)
                 .orderBy(orderByField, Query.Direction.DESCENDING);
         }
-
-
-        Query query = db.collection("Users")
-                .document(user.getUid())
-                .collection("Transactions")
-                .whereEqualTo("method", transactionsMethod)
-                .orderBy(orderByField, Query.Direction.DESCENDING);
 
         FirestoreRecyclerOptions<Transaction> options = new FirestoreRecyclerOptions.Builder<Transaction>()
                 .setQuery(query, Transaction.class).setLifecycleOwner(lcOwner).build();
