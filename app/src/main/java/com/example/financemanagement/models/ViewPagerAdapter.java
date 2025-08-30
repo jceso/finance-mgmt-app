@@ -102,7 +102,7 @@ public class ViewPagerAdapter extends FragmentStateAdapter {
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
                         // Retrieve the categories array from the user document
-                        Map<String, Map<String, Object>> categoriesMap = (Map<String, Map<String, Object>>) documentSnapshot.get("categories");
+                        Map<String, Map<String, Object>> categoriesMap = (Map<String, Map<String, Object>>) documentSnapshot.get("Categories");
                         Log.d("SpinnerSetup", "Categories: " + categoriesMap);
 
                         if (categoriesMap != null) {

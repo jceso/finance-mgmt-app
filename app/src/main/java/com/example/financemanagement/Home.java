@@ -17,6 +17,7 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.Locale;
 import java.util.Map;
@@ -149,47 +150,74 @@ public class Home extends AppCompatActivity {
     private void moneySetting() {
         TextView loanMoney = findViewById(R.id.loan_money);
         TextView salaryMoney = findViewById(R.id.salary_money);
+        DocumentReference userRef = fStore.collection("Users").document(user.getUid());
 
-        // Retrieve user infos
-        fStore.collection("Users").document(userId).get()
-            .addOnSuccessListener(documentSnapshot -> {
-                if (documentSnapshot.exists()) {
-                    // Retrieve balances
-                    Object balancesObj = documentSnapshot.get("Balances");
+        userRef.get().addOnSuccessListener(documentSnapshot -> {
+            if (documentSnapshot.exists()) {
+                // Retrieve balances
+                Object balancesObj = documentSnapshot.get("Balances");
+                if (balancesObj instanceof Map) {
+                    Map<String, Object> balancesMap = (Map<String, Object>) balancesObj;
 
-                    if (balancesObj instanceof Map) {
-                        Map<String, Object> balancesMap = (Map<String, Object>) balancesObj;
-
-                        Object creditCardObj = balancesMap.get("credit_card");
-                        if (creditCardObj instanceof Map) {
-                            Map<String, Object> creditCardMap = (Map<String, Object>) creditCardObj;
-                            Object value = creditCardMap.get("value");
-                            if (value instanceof Number) {
-                                cardBalance = ((Number) value).doubleValue();
-                            }
+                    Object creditCardObj = balancesMap.get("credit_card");
+                    if (creditCardObj instanceof Map) {
+                        Map<String, Object> creditCardMap = (Map<String, Object>) creditCardObj;
+                        Object value = creditCardMap.get("value");
+                        if (value instanceof Number) {
+                            cardBalance = ((Number) value).doubleValue();
                         }
-
-                        Object cashObj = balancesMap.get("cash");
-                        if (cashObj instanceof Map) {
-                            Map<String, Object> cashMap = (Map<String, Object>) cashObj;
-                            Object value = cashMap.get("value");
-                            if (value instanceof Number) {
-                                cashBalance = ((Number) value).doubleValue();
-                            }
-                        }
-
-                        cardMoney.setText(String.format(Locale.getDefault(), "€%d", (int) cardBalance));
-                        cashMoney.setText(String.format(Locale.getDefault(), "€%d", (int) cashBalance));
-                    } else {
-                        cardMoney.setText("€0");
-                        cashMoney.setText("€0");
                     }
 
-                    // Retrieve incomes
+                    Object cashObj = balancesMap.get("cash");
+                    if (cashObj instanceof Map) {
+                        Map<String, Object> cashMap = (Map<String, Object>) cashObj;
+                        Object value = cashMap.get("value");
+                        if (value instanceof Number) {
+                            cashBalance = ((Number) value).doubleValue();
+                        }
+                    }
+
+                    cardMoney.setText(String.format(Locale.getDefault(), "€%d", (int) cardBalance));
+                    cashMoney.setText(String.format(Locale.getDefault(), "€%d", (int) cashBalance));
+                } else {
+                    cardMoney.setText("€0");
+                    cashMoney.setText("€0");
                 }
-            }).addOnFailureListener(e -> {
-                cardMoney.setText("Error");
-                cashMoney.setText("Error");
+
+                // Retrieve incomes
+                Object incomesObj = documentSnapshot.get("Categories");
+                double salaryBalance = 0L, loanBalance = 0L;
+                if (balancesObj instanceof Map) {
+                    Map<String, Object> balancesMap = (Map<String, Object>) balancesObj;
+
+                    Object creditCardObj = balancesMap.get("salary");
+                    if (creditCardObj instanceof Map) {
+                        Map<String, Object> creditCardMap = (Map<String, Object>) creditCardObj;
+                        Object value = creditCardMap.get("sum");
+                        if (value instanceof Number) {
+                            salaryBalance = ((Number) value).doubleValue();
+                        }
+                    }
+
+                    Object cashObj = balancesMap.get("loan");
+                    if (cashObj instanceof Map) {
+                        Map<String, Object> cashMap = (Map<String, Object>) cashObj;
+                        Object value = cashMap.get("sum");
+                        if (value instanceof Number) {
+                            loanBalance = ((Number) value).doubleValue();
+                        }
+                    }
+
+                    salaryMoney.setText(String.format(Locale.getDefault(), "€%d", (int) salaryBalance));
+                    loanMoney.setText(String.format(Locale.getDefault(), "€%d", (int) loanBalance));
+                } else {
+                    salaryMoney.setText("€0");
+                    loanMoney.setText("€0");
+                }
+            }
+        }).addOnFailureListener(e -> {
+            salaryMoney.setText("Error");
+            loanMoney.setText("Error");
         });
     }
 

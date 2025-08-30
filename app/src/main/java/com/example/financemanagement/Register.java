@@ -125,20 +125,20 @@ public class Register extends AppCompatActivity {
                         userInfo.put("Balances", balances);
 
                         Map<String, Object> categories = new HashMap<>();
-                        categories.put("Cibo", createCategory("icc_food", "expense", true));
-                        categories.put("Casa", createCategory("icc_home", "expense", false));
-                        categories.put("Sport", createCategory("icc_sport", "expense", false));
-                        categories.put("Benessere", createCategory("icc_wellness", "expense", false));
-                        categories.put("Vestiti", createCategory("icc_clothes", "expense", false));
-                        categories.put("Trasporti", createCategory("icc_transport", "expense", false));
-                        categories.put("Iscrizioni", createCategory("icc_subscriptions", "expense", false));
-                        categories.put("Cibo fuori casa", createCategory("icc_out_of_home", "expense", true));
-                        categories.put("Svago", createCategory("icc_entertainment", "expense", true));
-                        categories.put("Stipendio", createCategory("icc_job", "income", true));
-                        categories.put("Regalo", createCategory("icc_giftcard", "income", false));
-                        categories.put("Prestito", createCategory("icc_handshake", "income", true));
+                        categories.put("food", createCategory("icc_food", "expense", true));
+                        categories.put("home", createCategory("icc_home", "expense", false));
+                        categories.put("sport", createCategory("icc_sport", "expense", false));
+                        categories.put("wellness", createCategory("icc_wellness", "expense", false));
+                        categories.put("clothes", createCategory("icc_clothes", "expense", false));
+                        categories.put("transport", createCategory("icc_transport", "expense", false));
+                        categories.put("subscriptions", createCategory("icc_subscriptions", "expense", false));
+                        categories.put("out of home", createCategory("icc_out_of_home", "expense", true));
+                        categories.put("entertainment", createCategory("icc_entertainment", "expense", true));
+                        categories.put("salary", createCategory("icc_job", "income", true));
+                        categories.put("gift", createCategory("icc_giftcard", "income", false));
+                        categories.put("loan", createCategory("icc_handshake", "income", true));
 
-                        userInfo.put("categories", categories);
+                        userInfo.put("Categories", categories);
 
                         dr.set(userInfo)
                                 .addOnFailureListener(e -> Log.e("UserCreation", "Error saving user and categories", e))
@@ -162,6 +162,9 @@ public class Register extends AppCompatActivity {
         category.put("icon", icon);
         category.put("type", type);
         category.put("fav", fav);
+        if (type.equals("salary") || type.equals("loan"))
+            category.put("sum", 0);
+
         return category;
     }
 

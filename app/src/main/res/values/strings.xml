@@ -15,4 +15,5 @@
     <string name="expense">Expense</string>
     <string name="no_news">There are no news yet</string>
     <string name="edit">Edit</string>
+    <string name="method">Method</string>
 </resources>

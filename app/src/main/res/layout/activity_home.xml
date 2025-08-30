@@ -176,7 +176,7 @@
             android:textColor="@color/secondary_light"
             android:textStyle="bold"
             android:background="@drawable/positive_elmt"
-            android:layout_weight="11"
+            android:layout_weight="5"
             app:drawableStartCompat="@drawable/category_job"
             app:drawableTint="@color/secondary_light" />
     </LinearLayout>
