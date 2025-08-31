@@ -18,15 +18,6 @@ public class Transaction {
 
     public Transaction() { }
 
-    public Transaction(float amount, String note, String category, String method, String type, String frequency) {
-        this.amount = amount;
-        this.note = note;
-        this.category = category;
-        this.method = method;
-        this.type = type;
-        this.frequency = frequency;
-    }
-
     public String getFormatted(long dateToFormat) {
         LocalDateTime dateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(dateToFormat), ZoneId.systemDefault());
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
@@ -83,9 +74,6 @@ public class Transaction {
         LocalDateTime localDateTime = LocalDateTime.of(y, mth, d, h, min);
         this.date = localDateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
     }
-
-
-
 
     public boolean isRecurring() {
         return !FREQ_ONCE.equals(frequency);

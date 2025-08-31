@@ -128,8 +128,7 @@ public class CommonFeatures {
         if (transactionsMethod.equals("savings")) {
             query = db.collection("Users")
                 .document(user.getUid())
-                .collection("Transactions")
-                .whereNotEqualTo("frequency", "Not repeated")
+                .collection("RepeatedTransactions")
                 .orderBy(orderByField, Query.Direction.DESCENDING);
         } else {
             query = db.collection("Users")

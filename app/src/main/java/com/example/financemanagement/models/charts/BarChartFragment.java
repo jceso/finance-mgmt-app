@@ -72,7 +72,7 @@ public class BarChartFragment extends Fragment {
             if (!userDoc.exists()) return;
 
             // Get favorite categories
-            Map<String, Object> categories = (Map<String, Object>) userDoc.get("categories");
+            Map<String, Object> categories = (Map<String, Object>) userDoc.get("Categories");
             List<String> favoriteCategories = new ArrayList<>();
             for (Map.Entry<String, Object> entry : Objects.requireNonNull(categories).entrySet()) {
                 Map<String, Object> category = (Map<String, Object>) entry.getValue();

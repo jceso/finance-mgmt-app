@@ -199,7 +199,7 @@ public class ViewPagerAdapter extends FragmentStateAdapter {
         });
 
         save_btn.setOnClickListener(v -> {
-            boolean isValid = true, isFixed;
+            boolean isValid = true, isRepeated;
 
             // Check if amount, note, date and time are empty
             if (!amount.getText().toString().trim().matches("^\\d+(\\.\\d{1,2})?$")) {
@@ -253,7 +253,9 @@ public class ViewPagerAdapter extends FragmentStateAdapter {
                     case "Monthly": fixed_income = transactionAmount; break;
                     case "Yearly": fixed_income = transactionAmount/12; break;
                 }
+                isRepeated = !repeat.getText().toString().equals("Not repeated");
 
+                // Create transaction
                 Transaction transaction = new Transaction();
                 transaction.setType(isExpense ? "expense" : "income");
                 transaction.setAmount(transactionAmount);
@@ -261,18 +263,24 @@ public class ViewPagerAdapter extends FragmentStateAdapter {
                 transaction.setNote(note.getText().toString());
                 transaction.setDate(dateInfos[0], dateInfos[1], dateInfos[2], dateInfos[3], dateInfos[4]);
                 transaction.setMethod(pmt_method);
-                transaction.setFrequency(frequency);
-                if (!"once".equals(frequency))
-                    transaction.setLastExecuted(dateInfos[0], dateInfos[1], dateInfos[2], dateInfos[3], dateInfos[4]);
 
                 DocumentReference userRef = db.collection("Users").document(user.getUid());
-                // Save transaction in FirestoreFirebase
+
+                // Save transaction in FireStoreFirebase
                 userRef.collection("Transactions").add(transaction)
                     .addOnSuccessListener(documentReference -> Log.d("SaveTransaction", "Saved transaction with ID: " + documentReference.getId() + " | Category " + transaction.getCategory()))
                     .addOnFailureListener(e -> Log.e("SaveTransaction", "Saving error", e));
 
+                // Save repeated transaction in FireStoreFirebase
+                if (isRepeated) {
+                    transaction.setFrequency(frequency);
+                    transaction.setLastExecuted(dateInfos[0], dateInfos[1], dateInfos[2], dateInfos[3], dateInfos[4]);
+                    userRef.collection("RepeatedTransactions").add(transaction)
+                            .addOnSuccessListener(documentReference -> Log.d("SaveTransaction", "Saved transaction with ID: " + documentReference.getId() + " | Category " + transaction.getCategory()))
+                            .addOnFailureListener(e -> Log.e("SaveTransaction", "Saving error", e));
+                }
+
                 // Update Balance
-                isFixed = !repeat.getText().toString().equals("Not repeated");
                 float finalFixed_income = fixed_income;
                 db.runTransaction((com.google.firebase.firestore.Transaction.Function<Void>) firestoreTransaction -> {
                     DocumentSnapshot snapshot = firestoreTransaction.get(userRef);
@@ -290,20 +298,27 @@ public class ViewPagerAdapter extends FragmentStateAdapter {
                     updates.put("Balances." + pmt_method + ".value", newValue);
                     updates.put("Balances." + pmt_method + ".date", new Date());
 
-                    // If fixed income/expense, it updates the value_monthly field
-                    if (isFixed) {
-                        Map<String, Object> fixedIncomeMap = (Map<String, Object>) snapshot.get("Balances.fixed_income");
+                    // If repeated income/expense, it updates the value_monthly field
+                    if (isRepeated) {
+                        double currentFixedIncome = (Double) snapshot.getDouble("Balances.fixed_income");
+                        double newFixedIncome = isExpense ? currentFixedIncome - finalFixed_income
+                                                          : currentFixedIncome + finalFixed_income;
 
-                        if (fixedIncomeMap != null) {
-                            Number oldFixedIncome = (Number) fixedIncomeMap.get("value_monthly");
+                        firestoreTransaction.update(userRef, "Balances.fixed_income", newFixedIncome);
+                    }
 
-                            float currentFixedIncome = oldFixedIncome != null ? oldFixedIncome.floatValue() : 0f;
-                            float newFixedIncome = isExpense
-                                    ? currentFixedIncome - finalFixed_income
-                                    : currentFixedIncome + finalFixed_income;
+                    // Check if income is salary or loan, and update the category sum
+                    if ("income".equals(transaction.getType()) && ("salary".equals(transaction.getCategory()) || "loan".equals(transaction.getCategory()))) {
+                        String categoryPath = "Categories." + transaction.getCategory() + ".sum";
 
-                            firestoreTransaction.update(userRef, "Balances.fixed_income.value_monthly", newFixedIncome);
-                        }
+                        // Get the current category sum
+                        Double categorySumObj = (Double) snapshot.get(categoryPath);
+                        double currentCategorySum = categorySumObj != null ? categorySumObj : 0;
+
+                        // Update the category sum
+                        double updatedCategorySum = currentCategorySum + transaction.getAmount();
+                        firestoreTransaction.update(userRef, categoryPath, updatedCategorySum);
+                        Log.d("CategoryUpdate", "Updated " + transaction.getCategory() + " sum: " + updatedCategorySum);
                     }
 
                     firestoreTransaction.update(userRef, updates);

@@ -106,11 +106,8 @@ public class Register extends AppCompatActivity {
                         userInfo.put("email", email);
 
                         Map<String, Object> balances = new HashMap<>();
-
-                        Map<String, Object> fixedIncome = new HashMap<>();
-                        fixedIncome.put("save_perc", .3);   // 30% del restante 45% di spesa variabile (circa 15% di tutto)
-                        fixedIncome.put("value_monthly", 0);
-                        balances.put("fixed_income", fixedIncome);
+                        balances.put("save_perc", 0.3); // 30% del restante 45% di spesa variabile (circa 15% di tutto)
+                        balances.put("fixed_income", 0);
 
                         Map<String, Object> cashBalance = new HashMap<>();
                         cashBalance.put("value", cashValue);

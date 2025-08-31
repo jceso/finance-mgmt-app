@@ -23,20 +23,17 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.financemanagement.models.CommonFeatures;
-import com.example.financemanagement.models.Transaction;
 import com.example.financemanagement.models.TransactionAdapter;
-import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.Query;
 
 import java.util.Locale;
+import java.util.Objects;
 
 public class Savings extends AppCompatActivity {
     private static DocumentReference userDocRef;
-    private FirebaseUser user;
     private float currIncomes, currExpenses;
     private TextView perc;
     private TextView thCurrSavings;
@@ -56,8 +53,8 @@ public class Savings extends AppCompatActivity {
         // Initial setting
         CommonFeatures.initialSettings(this);
         CommonFeatures.setBackToHome(this, this, getOnBackPressedDispatcher());
-        user = FirebaseAuth.getInstance().getCurrentUser();
-        userDocRef = FirebaseFirestore.getInstance().collection("Users").document(user.getUid());
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        userDocRef = FirebaseFirestore.getInstance().collection("Users").document(Objects.requireNonNull(user).getUid());
         currIncomes = getIntent().getFloatExtra("curr_incomes", 0);
         currExpenses = getIntent().getFloatExtra("curr_expenses", 0);
 
@@ -79,11 +76,11 @@ public class Savings extends AppCompatActivity {
 
         userDocRef.get().addOnSuccessListener(documentSnapshot -> {
             if (documentSnapshot.exists()) {
-                Long savePercLong = documentSnapshot.getLong("Balances.save_perc");
-                int savePerc = savePercLong != null ? savePercLong.intValue() : 0;
+                Object savePercObj = documentSnapshot.get("Balances.save_perc");
+                int savePerc = (int) (((Number) Objects.requireNonNull(savePercObj)).doubleValue() * 100);
                 float calcSavings = (float) (((double) savePerc/100)*currIncomes);
                 float maxCurExpenses = currIncomes - calcSavings;
-                Log.d("Savings", "Save percentage: " + savePerc + "%");
+                Log.d("Savings", "Save percentage after: " + savePerc + "%");
 
                 currSavings.setText(String.format(Locale.getDefault(), "€%.2f", (currIncomes-currExpenses)));
                 perc.setText(String.format(Locale.getDefault(), "%d%%", savePerc));
@@ -91,12 +88,12 @@ public class Savings extends AppCompatActivity {
                 monthlyIncome.setText(String.format("%s %s", getString(R.string.monthly_income), String.format(Locale.getDefault(), "€%.2f", currIncomes)));
 
                 if (currExpenses > maxCurExpenses) {
-                    Log.d("HomeSavings", "Hai sprecato soldi, hai rotto il porco :(\n  Questo mese avevi " + currIncomes + " di guadagno, ma hai speso " + currExpenses + "\n  Ti restano " + (currIncomes-currExpenses) + " rispetto al risparmio teorico di " + calcSavings);
+                    Log.d("HomeSavings", "You wasted money, you broke the pig :(\n  This month you had " + currIncomes + " of income, but you spent " + currExpenses + "\n  You're left with " + (currIncomes-currExpenses) + " instead of the theoretic savings " + calcSavings);
 
                     summary.setBackgroundResource(R.drawable.rounded_negative);
                     pigImage.setImageResource(R.drawable.pig_sad_original);
                 } else {
-                    Log.d("HomeSavings", "Hai risparmiato soldi, il porco è salvo :)\n  Questo mese avevi " + currIncomes + " di guadagno e hai speso " + currExpenses + "\n  Ti restano " + (currIncomes-currExpenses) + " rispetto al risparmio teorico di " + calcSavings);
+                    Log.d("HomeSavings", "You saved money, the pig is safe :)\n  This month you had " + currIncomes + " of income, but you spent " + currExpenses + "\n  You're left with " + (currIncomes-currExpenses) + " instead of the theoretic savings " + calcSavings);
 
                     summary.setBackgroundResource(R.drawable.rounded_positive);
                     pigImage.setImageResource(R.drawable.pig_happy);
@@ -133,14 +130,14 @@ public class Savings extends AppCompatActivity {
         cancelButton.setOnClickListener(v -> dialog.dismiss());
         dialog.show();
 
-        // "Edit" button updates the value in Firestore
+        // "Edit" button updates the value in FireStore
         editButton.setOnClickListener(v -> {
             String amountStr = amountEditText.getText().toString().trim();
             if (!amountStr.isEmpty()) {
                 Integer percValue = Integer.valueOf(amountStr);
                 userDocRef.update("Balances.save_perc", percValue)
-                    .addOnSuccessListener(aVoid -> Log.d("Firestore", "save_perc aggiornato con successo"))
-                    .addOnFailureListener(e -> Log.e("Firestore", "Errore nell'aggiornamento: " + e.getMessage()));
+                    .addOnSuccessListener(aVoid -> Log.d("FireStore", "save_perc updated successfully"))
+                    .addOnFailureListener(e -> Log.e("FireStore", "Updating error: " + e.getMessage()));
 
                 dialog.dismiss();
             } else  // Show an error message if the input is empty

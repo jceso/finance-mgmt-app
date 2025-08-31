@@ -17,7 +17,6 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.Locale;
 import java.util.Map;
@@ -33,7 +32,6 @@ import me.relex.circleindicator.CircleIndicator3;
 public class Home extends AppCompatActivity {
     private FirebaseFirestore fStore;
     private FirebaseUser user;
-    private String userId;
     private TextView cardMoney, cashMoney;
     private double cardBalance = 0L, cashBalance = 0L;
     private float monthlyVarExp = 0, incTotal = 0;
@@ -55,10 +53,7 @@ public class Home extends AppCompatActivity {
         fStore = FirebaseFirestore.getInstance();
         user = FirebaseAuth.getInstance().getCurrentUser();
 
-        if (user != null) {
-            userId = user.getUid();
-            // Proceed with logic
-        } else {
+        if (user == null) {
             // Redirect to login or handle unauthorized access
             Log.e("Home", "User is not logged in!");
             Intent intent = new Intent(this, Login.class);
@@ -88,9 +83,9 @@ public class Home extends AppCompatActivity {
         // Cibo, Casa, Sport, Benessere, Vestiti, Trasporti, Abbonamenti, Cibo fuori casa, Svago
         // Da mantenere tra i preferiti Cibo-CiboFuoriCasa-Svago
 
-        // 55% Spese fisse - Casa, Cibo, Trasporti
-        // 30% Spese variabili - Svago, Cibo fuori casa
-        // 15% Risparmio o Emergenze
+        // 55% Fixed expenses - House, Food, Transport
+        // 30% Variable expenses - Entertainment, Out of home food
+        // 15% Savings or Emergencies
 
         ImageView avatar = findViewById(R.id.avatar);
         Log.d("Avatar", "Avatar: " + avatar);
@@ -179,40 +174,35 @@ public class Home extends AppCompatActivity {
 
                     cardMoney.setText(String.format(Locale.getDefault(), "€%d", (int) cardBalance));
                     cashMoney.setText(String.format(Locale.getDefault(), "€%d", (int) cashBalance));
-                } else {
-                    cardMoney.setText("€0");
-                    cashMoney.setText("€0");
                 }
 
                 // Retrieve incomes
                 Object incomesObj = documentSnapshot.get("Categories");
                 double salaryBalance = 0L, loanBalance = 0L;
-                if (balancesObj instanceof Map) {
-                    Map<String, Object> balancesMap = (Map<String, Object>) balancesObj;
+                if (incomesObj instanceof Map) {
+                    Map<String, Object> incomesMap = (Map<String, Object>) incomesObj;
 
-                    Object creditCardObj = balancesMap.get("salary");
-                    if (creditCardObj instanceof Map) {
-                        Map<String, Object> creditCardMap = (Map<String, Object>) creditCardObj;
-                        Object value = creditCardMap.get("sum");
+                    Object salaryObj = incomesMap.get("salary");
+                    if (salaryObj instanceof Map) {
+                        Map<String, Object> salaryMap = (Map<String, Object>) salaryObj;
+                        Object value = salaryMap.get("sum");
                         if (value instanceof Number) {
                             salaryBalance = ((Number) value).doubleValue();
                         }
                     }
 
-                    Object cashObj = balancesMap.get("loan");
-                    if (cashObj instanceof Map) {
-                        Map<String, Object> cashMap = (Map<String, Object>) cashObj;
-                        Object value = cashMap.get("sum");
+                    Object loanObj = incomesMap.get("loan");
+                    if (loanObj instanceof Map) {
+                        Map<String, Object> loanMap = (Map<String, Object>) loanObj;
+                        Object value = loanMap.get("sum");
                         if (value instanceof Number) {
                             loanBalance = ((Number) value).doubleValue();
                         }
                     }
 
-                    salaryMoney.setText(String.format(Locale.getDefault(), "€%d", (int) salaryBalance));
-                    loanMoney.setText(String.format(Locale.getDefault(), "€%d", (int) loanBalance));
-                } else {
-                    salaryMoney.setText("€0");
-                    loanMoney.setText("€0");
+                    Log.d("Home", "Salario: " + salaryBalance + " | Prestito: " + loanBalance);
+                    salaryMoney.setText(String.format(Locale.getDefault(), "€ %d", (int) salaryBalance));
+                    loanMoney.setText(String.format(Locale.getDefault(), "€ %d", (int) loanBalance));
                 }
             }
         }).addOnFailureListener(e -> {
@@ -229,23 +219,19 @@ public class Home extends AppCompatActivity {
                 // 1. Fetch fixed_income and save_perc
                 Map<String, Object> balances = (Map<String, Object>) documentSnapshot.get("Balances");
                 double fixedIncome;
-                int savePerc;
+                int savePerc;  // Using int to store percentage as an integer
 
-                if (balances != null && balances.get("fixed_income") instanceof Map) {
-                    Log.d("HomeSavings", "Fixed income found! " + balances.get("fixed_income"));
-                    Map<String, Object> fixedIncomeMap = (Map<String, Object>) balances.get("fixed_income");
+                if (balances != null) {
+                    Object fixedIncomeObj = balances.get("fixed_income");
+                    Object savePercObj = balances.get("save_perc");
 
-                    Object valueMonthlyObj = Objects.requireNonNull(fixedIncomeMap).get("value_monthly");
-                    Object savePercObj = fixedIncomeMap.get("save_perc");
+                    Log.d("HomeSavings", "Fixed income: " + fixedIncomeObj + " | Save perc: " + savePercObj);
 
-                    if (valueMonthlyObj instanceof Number)
-                        fixedIncome = ((Number) valueMonthlyObj).doubleValue();
-                    else
-                        fixedIncome = 0;
-                    if (savePercObj instanceof Number)
-                        savePerc = ((Number) savePercObj).intValue();
-                    else
-                        savePerc = 10;
+                    fixedIncome = ((Number) Objects.requireNonNull(fixedIncomeObj)).doubleValue();
+                    savePerc = (int) (((Number) Objects.requireNonNull(savePercObj)).doubleValue() * 100);
+
+                    // Log the result as an integer value
+                    Log.d("HomeSavings", "Fixed income: " + fixedIncome + " | Save perc: " + savePerc);
                 } else {
                     Log.d("HomeSavings", "Fixed income not found!");
                     savePerc = 10;
@@ -275,23 +261,23 @@ public class Home extends AppCompatActivity {
                     float currSavings = (float) (((double) savePerc /100)*incTotal);
                     float maxCurExpenses = incTotal - currSavings;
                     Log.d("HomeSavings", "Totale guadagni variabili: " + monthlyVarInc + " | Risparmio fisso: " + fixedIncome + " | Risparmio netto: " + incTotal);
-                    Log.d("HomeSavings", "Risparmio del " + savePerc + "% | Si possono spendere " + maxCurExpenses + " euro");
+                    Log.d("HomeSavings", "Savings: " + savePerc + "% | You can spend up to " + maxCurExpenses + " euro");
 
                     // 4. Modify pig image
                     ImageView pigImage = findViewById(R.id.summary);
                     if (monthlyVarExp > maxCurExpenses) {
-                        Log.d("HomeSavings", "Hai sprecato soldi, hai rotto il porco :(\n  Questo mese avevi " + incTotal + " di guadagno, ma hai speso " + monthlyVarExp + "\n  Ti restano " + (incTotal-monthlyVarExp) + " rispetto al risparmio teorico di " + currSavings);
+                        Log.d("HomeSavings", "You wasted money, you broke the pig :(\n  This month you had " + incTotal + " of income, but you spent " + monthlyVarExp + "\n  You still have " + (incTotal-monthlyVarExp) + " compared to the savings theory " + currSavings);
 
                         pigImage.setBackgroundResource(R.drawable.pig_mood_sad);
                         pigImage.setImageResource(R.drawable.pig_sad_original);
                     } else {
-                        Log.d("HomeSavings", "Hai risparmiato soldi, il porco è salvo :)\n  Questo mese avevi " + incTotal + " di guadagno e hai speso " + monthlyVarExp + "\n  Ti restano " + (incTotal-monthlyVarExp) + " rispetto al risparmio teorico di " + currSavings);
+                        Log.d("HomeSavings", "You saved money, the pig is safe :)\n  This month you had " + incTotal + " of income, but you spent " + monthlyVarExp + "\n  You still have " + (incTotal-monthlyVarExp) + " compared to the savings theory " + currSavings);
 
                         pigImage.setBackgroundResource(R.drawable.pig_mood_happy);
                         pigImage.setImageResource(R.drawable.pig_happy);
                     }
-                }).addOnFailureListener(e -> Log.e("Savings", "Errore nel recupero transazioni", e));
+                }).addOnFailureListener(e -> Log.e("Savings", "Error retrieving transactions", e));
             }
-        }).addOnFailureListener(e -> Log.e("Savings", "Errore nel recupero dati utente", e));
+        }).addOnFailureListener(e -> Log.e("Savings", "Error retrieving user data", e));
     }
 }
