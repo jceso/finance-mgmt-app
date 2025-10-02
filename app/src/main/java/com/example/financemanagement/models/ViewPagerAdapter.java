@@ -110,6 +110,7 @@ public class ViewPagerAdapter extends FragmentStateAdapter {
 
                             for (Map.Entry<String, Map<String, Object>> entry : categoriesMap.entrySet()) {
                                 String name = entry.getKey();
+                                name = name.substring(0, 1).toUpperCase() + name.substring(1).toLowerCase();
                                 Map<String, Object> cat = entry.getValue();
                                 String type = (String) cat.get("type");
 

@@ -12,6 +12,11 @@ public class Category {
         this.icon = icon;
     }
 
+    public Category(String type, String icon) {
+        this.type = type;
+        this.icon = icon;
+    }
+
     public String getType() { return type; }
     public String getName() { return name; }
     public String getIcon() { return icon; }
