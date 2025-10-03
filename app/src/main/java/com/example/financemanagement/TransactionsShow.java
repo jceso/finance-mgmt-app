@@ -7,11 +7,17 @@ import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.AppCompatImageButton;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -25,6 +31,8 @@ import com.example.financemanagement.models.Transaction;
 import com.example.financemanagement.models.TransactionAdapter;
 import com.example.financemanagement.models.charts.ChartPagerAdapter;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
+import com.google.android.material.chip.Chip;
+import com.google.android.material.chip.ChipGroup;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -32,6 +40,7 @@ import com.google.firebase.firestore.Query;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 import me.relex.circleindicator.CircleIndicator3;
@@ -89,6 +98,9 @@ public class TransactionsShow extends AppCompatActivity {
         transactionType = "everything";
         orderSpinnerSetup(this, this, this);
         typeSpinnerSetup(this, this, this);
+
+        ImageButton filterButton = findViewById(R.id.filters);
+        filterButton.setOnClickListener(v -> showDialog());
     }
 
     private static void getTransactions(String orderByField, String type,  LifecycleOwner lcOwner, Activity activity) {
@@ -141,7 +153,7 @@ public class TransactionsShow extends AppCompatActivity {
     }
 
     private static void typeSpinnerSetup(Context context, Activity activity, LifecycleOwner lcOwner) {
-        Spinner typeSpinner = activity.findViewById(R.id.category_spinner);
+        Spinner typeSpinner = activity.findViewById(R.id.type_spinner);
         List<String> typeOptions = new ArrayList<>();
         typeOptions.add("Everything");
         typeOptions.add("Incomes");
@@ -171,4 +183,72 @@ public class TransactionsShow extends AppCompatActivity {
         });
     }
 
+    private void showDialog() {
+        // Inflate the custom layout from XML
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_filters, null);
+        builder.setView(dialogView);
+
+        ChipGroup chipGroup = dialogView.findViewById(R.id.selected_categories);
+        EditText categorySearch = dialogView.findViewById(R.id.category_search);
+        Button findButton = dialogView.findViewById(R.id.find_btn);
+        AppCompatImageButton cancelButton = dialogView.findViewById(R.id.cancel_btn);
+
+        // Recupera le categorie da Firestore
+        db.collection("Users").document(Objects.requireNonNull(user).getUid())
+            .get()
+            .addOnSuccessListener(documentSnapshot -> {
+                if (documentSnapshot.exists()) {
+                    Map<String, Object> categories = (Map<String, Object>) documentSnapshot.get("Categories");
+
+                    // Aggiungi la chip "X" nascosta all'inizio
+                    Chip clearChip = new Chip(this);
+                    clearChip.setText("X");
+                    clearChip.setCheckable(false);
+                    clearChip.setChipBackgroundColorResource(R.color.negative);
+                    clearChip.setTextColor(getResources().getColor(R.color.white));
+                    clearChip.setVisibility(View.GONE);
+                    chipGroup.addView(clearChip);
+
+                    // Aggiungi chip per ogni categoria
+                    for (String categoryName : Objects.requireNonNull(categories).keySet()) {
+                        Chip chip = new Chip(this, null, com.google.android.material.R.style.Widget_MaterialComponents_Chip_Choice);
+                        chip.setText(String.format("%s%s", categoryName.substring(0, 1).toUpperCase(), categoryName.substring(1).toLowerCase()));
+                        chip.setCheckable(true);
+                        chip.setClickable(true);
+
+                        chipGroup.addView(chip);
+                    }
+
+                    clearChip.setOnClickListener(v1 -> {
+                        // Deseleziona tutti i chip
+                        for (int i = 0; i < chipGroup.getChildCount(); i++) {
+                            View child = chipGroup.getChildAt(i);
+                            if (child instanceof Chip && ((Chip) child).isChecked()) {
+                                ((Chip) child).setChecked(false);
+                            }
+                        }
+                        clearChip.setVisibility(View.GONE);
+                    });
+
+                    // Listener per mostrare/nascondere la chip "X"
+                    chipGroup.setOnCheckedStateChangeListener((group, checkedId) -> {
+                        boolean hasSelection = false;
+                        for (int i = 0; i < group.getChildCount(); i++) {
+                            View child = group.getChildAt(i);
+                            if (child instanceof Chip && ((Chip) child).isChecked()) {
+                                hasSelection = true;
+                                break;
+                            }
+                        }
+                        clearChip.setVisibility(hasSelection ? View.VISIBLE : View.GONE);
+                    });
+                }
+            }).addOnFailureListener(e -> Log.e("CategoriesLoad", "Errore caricando categorie", e));
+
+        // Create and show the dialog
+        AlertDialog dialog = builder.create();
+        cancelButton.setOnClickListener(v -> dialog.dismiss());
+        dialog.show();
+    }
 }

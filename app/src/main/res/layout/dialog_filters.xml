@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical">
+
+    <!-- Container per le categorie selezionate -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Expense categories:" />
+    <com.google.android.material.chip.ChipGroup
+        android:id="@+id/selected_categories"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:layout_marginHorizontal="18dp"
+        app:singleLine="false"
+        app:singleSelection="false"
+        app:selectionRequired="false" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Income categories:" />
+    <com.google.android.material.chip.ChipGroup
+        android:id="@+id/income_categories"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:layout_marginHorizontal="18dp"
+        app:singleLine="false"
+        app:singleSelection="false"
+        app:selectionRequired="false" />
+
+    <EditText
+        android:id="@+id/category_search"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginVertical="15dp"
+        android:layout_marginHorizontal="25dp"
+        android:padding="15dp"
+        android:autofillHints="Lorem ipsum"
+        android:hint="@string/note"
+        android:textSize="20sp"
+        android:inputType="textCapSentences|textMultiLine"
+        android:maxLength="100"
+        android:background="@drawable/rounded_border"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp" >
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/find_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="10dp"
+            android:layout_weight="10"
+            android:text="Find"
+            android:textSize="30sp"
+            android:textColor="@color/white"
+            android:fontFamily="@font/hornbill_black"
+            android:background="@color/primary" />
+
+        <androidx.appcompat.widget.AppCompatImageButton
+            android:id="@+id/cancel_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:padding="10dp"
+            android:src="@drawable/ic_cancel"
+            android:tint="@color/white"
+            android:background="@color/negative"/>
+    </LinearLayout>
+</LinearLayout>

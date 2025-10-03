@@ -41,10 +41,10 @@ public class TransactionAdapter extends FirestoreRecyclerAdapter<Transaction, Tr
         holder.category.setText(categoryText);
         holder.date.setText(model.getFormatted(model.getDate()));
         if (model.getType().equals("expense")) {
-            textAmount = String.format(Locale.getDefault(), "- %.2f" , model.getAmount());
+            textAmount = String.format(Locale.getDefault(), "- €%.2f" , model.getAmount());
             holder.amount.setTextColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.negative));
         } else {
-            textAmount = String.format(Locale.getDefault(), "+ %.2f" , model.getAmount());
+            textAmount = String.format(Locale.getDefault(), "+ €%.2f" , model.getAmount());
             holder.amount.setTextColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.positive));
         }
         holder.amount.setText(textAmount);

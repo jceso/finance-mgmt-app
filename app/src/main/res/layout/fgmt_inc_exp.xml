@@ -49,7 +49,7 @@
         android:padding="15dp"
         android:autofillHints="Lorem ipsum"
         android:gravity="start"
-        android:hint="Note"
+        android:hint="@string/note"
         android:textColorHint="@color/grey_dark"
         android:textSize="22sp"
         android:textStyle="italic"
