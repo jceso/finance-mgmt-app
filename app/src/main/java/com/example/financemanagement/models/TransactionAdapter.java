@@ -10,7 +10,6 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.financemanagement.R;
-import com.example.financemanagement.models.Transaction;
 import com.firebase.ui.firestore.FirestoreRecyclerAdapter;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 
@@ -36,14 +35,16 @@ public class TransactionAdapter extends FirestoreRecyclerAdapter<Transaction, Tr
     @Override
     protected void onBindViewHolder(@NonNull TransactionViewHolder holder, int position, @NonNull Transaction model) {
         String textAmount;
-        holder.category.setText(model.getCategory());
-        holder.date.setText(model.getFormatted(model.getDate()));
+        String categoryText = model.getCategory();
+        categoryText = categoryText.substring(0, 1).toUpperCase() + categoryText.substring(1).toLowerCase();
 
+        holder.category.setText(categoryText);
+        holder.date.setText(model.getFormatted(model.getDate()));
         if (model.getType().equals("expense")) {
-            textAmount = String.format(Locale.getDefault(), "- %.2f" , model.getAmount());
+            textAmount = String.format(Locale.getDefault(), "- €%.2f" , model.getAmount());
             holder.amount.setTextColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.negative));
         } else {
-            textAmount = String.format(Locale.getDefault(), "+ %.2f" , model.getAmount());
+            textAmount = String.format(Locale.getDefault(), "+ €%.2f" , model.getAmount());
             holder.amount.setTextColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.positive));
         }
         holder.amount.setText(textAmount);

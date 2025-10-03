@@ -77,7 +77,7 @@ public class Savings extends AppCompatActivity {
         userDocRef.get().addOnSuccessListener(documentSnapshot -> {
             if (documentSnapshot.exists()) {
                 Object savePercObj = documentSnapshot.get("Balances.save_perc");
-                int savePerc = (int) (((Number) Objects.requireNonNull(savePercObj)).doubleValue() * 100);
+                int savePerc = (int) ((Number) Objects.requireNonNull(savePercObj)).doubleValue();
                 float calcSavings = (float) (((double) savePerc/100)*currIncomes);
                 float maxCurExpenses = currIncomes - calcSavings;
                 Log.d("Savings", "Save percentage after: " + savePerc + "%");
@@ -140,6 +140,8 @@ public class Savings extends AppCompatActivity {
                     .addOnFailureListener(e -> Log.e("FireStore", "Updating error: " + e.getMessage()));
 
                 dialog.dismiss();
+                summarySetting();
+                Toast.makeText(Savings.this, "Percentage updated!", Toast.LENGTH_SHORT).show();
             } else  // Show an error message if the input is empty
                 Toast.makeText(Savings.this, "Insert a valid amount", Toast.LENGTH_SHORT).show();
         });

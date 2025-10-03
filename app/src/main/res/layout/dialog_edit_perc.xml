@@ -12,10 +12,10 @@
         android:layout_marginHorizontal="15dp"
         android:padding="15dp"
         android:autofillHints="12.34"
-        android:hint="Percentage"
+        android:hint="@string/perc"
         android:textSize="27sp"
         android:fontFamily="@font/cs_boline_edited"
-        android:inputType="numberDecimal"
+        android:inputType="number"
         android:maxLength="8"
         android:background="@drawable/rounded_border"/>
 

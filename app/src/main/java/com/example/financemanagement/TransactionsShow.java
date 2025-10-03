@@ -7,11 +7,17 @@ import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.AppCompatImageButton;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -20,13 +26,13 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
 
-import com.example.financemanagement.models.Category;
-import com.example.financemanagement.models.CategoryAdapter;
 import com.example.financemanagement.models.CommonFeatures;
 import com.example.financemanagement.models.Transaction;
 import com.example.financemanagement.models.TransactionAdapter;
 import com.example.financemanagement.models.charts.ChartPagerAdapter;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
+import com.google.android.material.chip.Chip;
+import com.google.android.material.chip.ChipGroup;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -40,9 +46,13 @@ import java.util.Objects;
 import me.relex.circleindicator.CircleIndicator3;
 
 public class TransactionsShow extends AppCompatActivity {
+    private static final String CAT_EVERY = "once";
+    private static final String CAT_INC = "incomes";
+    private static final String CAT_EXP = "expenses";
+
     private static FirebaseUser user;
     private static FirebaseFirestore db;
-    private static String transactionsMethod;
+    private static String transactionsMethod, transactionOrder, transactionType;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -84,16 +94,24 @@ public class TransactionsShow extends AppCompatActivity {
         else
             circleIndicator.setViewPager(viewPager);
 
-        getTransactions("date", this, this);    // Chiamata iniziale
+        transactionOrder = "date";
+        transactionType = "everything";
         orderSpinnerSetup(this, this, this);
+        typeSpinnerSetup(this, this, this);
+
+        ImageButton filterButton = findViewById(R.id.filters);
+        filterButton.setOnClickListener(v -> showDialog());
     }
 
-    private static void getTransactions(String orderByField, LifecycleOwner lcOwner, Activity activity) {
+    private static void getTransactions(String orderByField, String type,  LifecycleOwner lcOwner, Activity activity) {
         Query query = db.collection("Users")
             .document(user.getUid())
             .collection("Transactions")
             .whereEqualTo("method", transactionsMethod)
             .orderBy(orderByField, Query.Direction.DESCENDING);
+
+        if (!type.equals("everything"))
+            query = query.whereEqualTo("type", type);
 
         FirestoreRecyclerOptions<Transaction> options = new FirestoreRecyclerOptions.Builder<Transaction>()
             .setQuery(query, Transaction.class).setLifecycleOwner(lcOwner).build();
@@ -125,8 +143,8 @@ public class TransactionsShow extends AppCompatActivity {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 // Aggiorna il RecyclerView con il nuovo ordine ("date" o "amount")
-                String selected = orderOptions.get(position).toLowerCase();
-                getTransactions(selected, lcOwner, activity);
+                transactionOrder = orderOptions.get(position).toLowerCase();
+                getTransactions(transactionOrder, transactionType, lcOwner, activity);
             }
 
             @Override
@@ -134,43 +152,103 @@ public class TransactionsShow extends AppCompatActivity {
         });
     }
 
-    private static void ctgSpinnerSetup(Activity activity, Boolean isExpense, Context context) {
-        Spinner category_spinner = activity.findViewById(R.id.category_spinner);
+    private static void typeSpinnerSetup(Context context, Activity activity, LifecycleOwner lcOwner) {
+        Spinner typeSpinner = activity.findViewById(R.id.type_spinner);
+        List<String> typeOptions = new ArrayList<>();
+        typeOptions.add("Everything");
+        typeOptions.add("Incomes");
+        typeOptions.add("Expenses");
 
-        if (user != null) {
-            String categoryType = isExpense ? "expense" : "income";
-            Log.d("SpinnerSetup","Category type: " + categoryType);
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(context, android.R.layout.simple_spinner_item, typeOptions);
+        typeSpinner.setAdapter(adapter);
 
-            db.collection("Users").document(user.getUid()).get().addOnSuccessListener(documentSnapshot -> {
-                if (documentSnapshot.exists()) {
-                    // Retrieve the categories array from the user document
-                    Map<String, Map<String, Object>> categoriesMap = (Map<String, Map<String, Object>>) documentSnapshot.get("categories");
-                    Log.d("SpinnerSetup", "Categories: " + categoriesMap);
-
-                    if (categoriesMap != null) {
-                        List<Category> categories = new ArrayList<>();
-                        categories.add(new Category(categoryType, "All", "icc_category"));
-                        categories.add(new Category(categoryType, "Favourites", "ic_fav_full"));
-
-                        for (Map.Entry<String, Map<String, Object>> entry : categoriesMap.entrySet()) {
-                            String name = entry.getKey();
-                            Map<String, Object> cat = entry.getValue();
-                            String type = (String) cat.get("type");
-
-                            Log.d("SpinnerSetup", "Name: " + name + ", Type: " + type + " - Asked for: " + categoryType);
-
-                            if (Objects.equals(type, categoryType)) {
-                                String icon = (String) cat.get("icon");
-                                categories.add(new Category(type, name, icon));
-                            }
-                        }
-
-                        CategoryAdapter adapter = new CategoryAdapter(context, categories);
-                        category_spinner.setAdapter(adapter);
-                    }
+        // Listener per aggiornare l'adapter quando cambia selezione
+        typeSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                // Aggiorna il RecyclerView con il tipo di transazione
+                switch (typeOptions.get(position)) {
+                    case "Incomes": transactionType = "income"; break;
+                    case "Expenses": transactionType = "expense"; break;
+                    case "Everything": transactionType = "everything"; break;
+                    // Security fallback
+                    default: transactionType = "everything"; break;
                 }
-            }).addOnFailureListener(e -> Log.e("SpinnerSetup", "Error in retrieving categories", e));
-        }
+
+                getTransactions(transactionOrder, transactionType, lcOwner, activity);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {}
+        });
     }
 
+    private void showDialog() {
+        // Inflate the custom layout from XML
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_filters, null);
+        builder.setView(dialogView);
+
+        ChipGroup chipGroup = dialogView.findViewById(R.id.selected_categories);
+        EditText categorySearch = dialogView.findViewById(R.id.category_search);
+        Button findButton = dialogView.findViewById(R.id.find_btn);
+        AppCompatImageButton cancelButton = dialogView.findViewById(R.id.cancel_btn);
+
+        // Recupera le categorie da Firestore
+        db.collection("Users").document(Objects.requireNonNull(user).getUid())
+            .get()
+            .addOnSuccessListener(documentSnapshot -> {
+                if (documentSnapshot.exists()) {
+                    Map<String, Object> categories = (Map<String, Object>) documentSnapshot.get("Categories");
+
+                    // Aggiungi la chip "X" nascosta all'inizio
+                    Chip clearChip = new Chip(this);
+                    clearChip.setText("X");
+                    clearChip.setCheckable(false);
+                    clearChip.setChipBackgroundColorResource(R.color.negative);
+                    clearChip.setTextColor(getResources().getColor(R.color.white));
+                    clearChip.setVisibility(View.GONE);
+                    chipGroup.addView(clearChip);
+
+                    // Aggiungi chip per ogni categoria
+                    for (String categoryName : Objects.requireNonNull(categories).keySet()) {
+                        Chip chip = new Chip(this, null, com.google.android.material.R.style.Widget_MaterialComponents_Chip_Choice);
+                        chip.setText(String.format("%s%s", categoryName.substring(0, 1).toUpperCase(), categoryName.substring(1).toLowerCase()));
+                        chip.setCheckable(true);
+                        chip.setClickable(true);
+
+                        chipGroup.addView(chip);
+                    }
+
+                    clearChip.setOnClickListener(v1 -> {
+                        // Deseleziona tutti i chip
+                        for (int i = 0; i < chipGroup.getChildCount(); i++) {
+                            View child = chipGroup.getChildAt(i);
+                            if (child instanceof Chip && ((Chip) child).isChecked()) {
+                                ((Chip) child).setChecked(false);
+                            }
+                        }
+                        clearChip.setVisibility(View.GONE);
+                    });
+
+                    // Listener per mostrare/nascondere la chip "X"
+                    chipGroup.setOnCheckedStateChangeListener((group, checkedId) -> {
+                        boolean hasSelection = false;
+                        for (int i = 0; i < group.getChildCount(); i++) {
+                            View child = group.getChildAt(i);
+                            if (child instanceof Chip && ((Chip) child).isChecked()) {
+                                hasSelection = true;
+                                break;
+                            }
+                        }
+                        clearChip.setVisibility(hasSelection ? View.VISIBLE : View.GONE);
+                    });
+                }
+            }).addOnFailureListener(e -> Log.e("CategoriesLoad", "Errore caricando categorie", e));
+
+        // Create and show the dialog
+        AlertDialog dialog = builder.create();
+        cancelButton.setOnClickListener(v -> dialog.dismiss());
+        dialog.show();
+    }
 }

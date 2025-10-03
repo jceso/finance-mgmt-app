@@ -8,7 +8,7 @@
     <string name="change_percentage">Change percentage</string>
     <string name="monthly_income">"Current monthly income is "</string>
     <string name="curr_savings">It should be</string>
-    <string name="of_monthly_income">of your monthly income</string>
+    <string name="of_monthly_income">saved from your monthly income</string>
     <string name="pig_desc">Savings summary</string>
     <string name="loan">Loan</string>
     <string name="income">Income</string>
@@ -16,4 +16,10 @@
     <string name="no_news">There are no news yet</string>
     <string name="edit">Edit</string>
     <string name="method">Method</string>
+    <string name="category">Category</string>
+    <string name="frequency">Frequency</string>
+    <string name="last_ex">Last execution</string>
+    <string name="date">Date</string>
+    <string name="perc">Percentage</string>
+    <string name="note">Note</string>
 </resources>
