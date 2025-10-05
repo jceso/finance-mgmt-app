@@ -10,9 +10,9 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AlertDialog;
@@ -189,7 +189,10 @@ public class TransactionsShow extends AppCompatActivity {
         View dialogView = getLayoutInflater().inflate(R.layout.dialog_filters, null);
         builder.setView(dialogView);
 
-        ChipGroup chipGroup = dialogView.findViewById(R.id.selected_categories);
+        LinearLayout expenseBox = dialogView.findViewById(R.id.expense_box);
+        LinearLayout incomeBox = dialogView.findViewById(R.id.income_box);
+        ChipGroup expenseGroup = dialogView.findViewById(R.id.expense_categories);
+        ChipGroup incomeGroup = dialogView.findViewById(R.id.income_categories);
         EditText categorySearch = dialogView.findViewById(R.id.category_search);
         Button findButton = dialogView.findViewById(R.id.find_btn);
         AppCompatImageButton cancelButton = dialogView.findViewById(R.id.cancel_btn);
@@ -201,48 +204,14 @@ public class TransactionsShow extends AppCompatActivity {
                 if (documentSnapshot.exists()) {
                     Map<String, Object> categories = (Map<String, Object>) documentSnapshot.get("Categories");
 
-                    // Aggiungi la chip "X" nascosta all'inizio
-                    Chip clearChip = new Chip(this);
-                    clearChip.setText("X");
-                    clearChip.setCheckable(false);
-                    clearChip.setChipBackgroundColorResource(R.color.negative);
-                    clearChip.setTextColor(getResources().getColor(R.color.white));
-                    clearChip.setVisibility(View.GONE);
-                    chipGroup.addView(clearChip);
-
-                    // Aggiungi chip per ogni categoria
-                    for (String categoryName : Objects.requireNonNull(categories).keySet()) {
-                        Chip chip = new Chip(this, null, com.google.android.material.R.style.Widget_MaterialComponents_Chip_Choice);
-                        chip.setText(String.format("%s%s", categoryName.substring(0, 1).toUpperCase(), categoryName.substring(1).toLowerCase()));
-                        chip.setCheckable(true);
-                        chip.setClickable(true);
-
-                        chipGroup.addView(chip);
+                    switch (transactionType) {
+                        case "income": expenseBox.setVisibility(View.GONE);
+                                    loadGroup(transactionType, incomeGroup, categories); break;
+                        case "expense": incomeBox.setVisibility(View.GONE);
+                                    loadGroup(transactionType, expenseGroup, categories); break;
+                        default: loadGroup("income", incomeGroup, categories);
+                                    loadGroup("expense", expenseGroup, categories); break;
                     }
-
-                    clearChip.setOnClickListener(v1 -> {
-                        // Deseleziona tutti i chip
-                        for (int i = 0; i < chipGroup.getChildCount(); i++) {
-                            View child = chipGroup.getChildAt(i);
-                            if (child instanceof Chip && ((Chip) child).isChecked()) {
-                                ((Chip) child).setChecked(false);
-                            }
-                        }
-                        clearChip.setVisibility(View.GONE);
-                    });
-
-                    // Listener per mostrare/nascondere la chip "X"
-                    chipGroup.setOnCheckedStateChangeListener((group, checkedId) -> {
-                        boolean hasSelection = false;
-                        for (int i = 0; i < group.getChildCount(); i++) {
-                            View child = group.getChildAt(i);
-                            if (child instanceof Chip && ((Chip) child).isChecked()) {
-                                hasSelection = true;
-                                break;
-                            }
-                        }
-                        clearChip.setVisibility(hasSelection ? View.VISIBLE : View.GONE);
-                    });
                 }
             }).addOnFailureListener(e -> Log.e("CategoriesLoad", "Errore caricando categorie", e));
 
@@ -250,5 +219,54 @@ public class TransactionsShow extends AppCompatActivity {
         AlertDialog dialog = builder.create();
         cancelButton.setOnClickListener(v -> dialog.dismiss());
         dialog.show();
+    }
+
+    private void loadGroup(String type, ChipGroup selected, Map<String, Object> categories) {
+        // Aggiungi la chip "X" nascosta all'inizio
+        Chip clearChip = new Chip(this);
+        clearChip.setText("X");
+        clearChip.setCheckable(false);
+        clearChip.setChipBackgroundColorResource(R.color.negative);
+        clearChip.setTextColor(getResources().getColor(R.color.white));
+        clearChip.setVisibility(View.GONE);
+        selected.addView(clearChip);
+
+        for (Map.Entry<String, Object> entry : Objects.requireNonNull(categories).entrySet()) {
+            Map<String, Object> categoryData = (Map<String, Object>) entry.getValue();
+            String categoryName = entry.getKey();
+            String catType = (String) categoryData.get("type");
+
+            Chip chip = new Chip(this, null, com.google.android.material.R.style.Widget_MaterialComponents_Chip_Choice);
+            chip.setText(String.format("%s%s", categoryName.substring(0, 1).toUpperCase(), categoryName.substring(1).toLowerCase()));
+            chip.setCheckable(true);
+            chip.setClickable(true);
+
+            if (type.equalsIgnoreCase(catType))
+                selected.addView(chip);
+        }
+
+        clearChip.setOnClickListener(v1 -> {
+            // Deseleziona tutti i chip
+            for (int i = 0; i < selected.getChildCount(); i++) {
+                View child = selected.getChildAt(i);
+                if (child instanceof Chip && ((Chip) child).isChecked()) {
+                    ((Chip) child).setChecked(false);
+                }
+            }
+            clearChip.setVisibility(View.GONE);
+        });
+
+        // Listener per mostrare/nascondere la chip "X"
+        selected.setOnCheckedStateChangeListener((group, checkedId) -> {
+            boolean hasSelection = false;
+            for (int i = 0; i < group.getChildCount(); i++) {
+                View child = group.getChildAt(i);
+                if (child instanceof Chip && ((Chip) child).isChecked()) {
+                    hasSelection = true;
+                    break;
+                }
+            }
+            clearChip.setVisibility(hasSelection ? View.VISIBLE : View.GONE);
+        });
     }
 }

@@ -22,4 +22,6 @@
     <string name="date">Date</string>
     <string name="perc">Percentage</string>
     <string name="note">Note</string>
+    <string name="expense_categories">Expense categories:</string>
+    <string name="income_categories">Income categories:</string>
 </resources>
