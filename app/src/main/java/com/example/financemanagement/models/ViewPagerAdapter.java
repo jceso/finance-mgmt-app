@@ -264,6 +264,7 @@ public class ViewPagerAdapter extends FragmentStateAdapter {
                 transaction.setNote(note.getText().toString());
                 transaction.setDate(dateInfos[0], dateInfos[1], dateInfos[2], dateInfos[3], dateInfos[4]);
                 transaction.setMethod(pmt_method);
+                transaction.setFrequency(frequency);
 
                 DocumentReference userRef = db.collection("Users").document(user.getUid());
 

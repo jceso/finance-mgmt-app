@@ -228,7 +228,7 @@ public class Home extends AppCompatActivity {
                     Log.d("HomeSavings", "Fixed income: " + fixedIncomeObj + " | Save perc: " + savePercObj);
 
                     fixedIncome = ((Number) Objects.requireNonNull(fixedIncomeObj)).doubleValue();
-                    savePerc = (int) (((Number) Objects.requireNonNull(savePercObj)).doubleValue() * 100);
+                    savePerc = (int) ((Number) Objects.requireNonNull(savePercObj)).doubleValue();
 
                     // Log the result as an integer value
                     Log.d("HomeSavings", "Fixed income: " + fixedIncome + " | Save perc: " + savePerc);
