@@ -13,6 +13,7 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AlertDialog;
@@ -52,7 +53,8 @@ public class TransactionsShow extends AppCompatActivity {
 
     private static FirebaseUser user;
     private static FirebaseFirestore db;
-    private static String transactionsMethod, transactionOrder, transactionType;
+    private static String transactionsMethod, transactionOrder, transactionType, transactionNote;
+    private static ArrayList<String> selectedCategories;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -113,6 +115,9 @@ public class TransactionsShow extends AppCompatActivity {
         if (!type.equals("everything"))
             query = query.whereEqualTo("type", type);
 
+        if (selectedCategories != null && !selectedCategories.isEmpty())
+            query = query.whereIn("category", selectedCategories);
+
         FirestoreRecyclerOptions<Transaction> options = new FirestoreRecyclerOptions.Builder<Transaction>()
             .setQuery(query, Transaction.class).setLifecycleOwner(lcOwner).build();
 
@@ -160,6 +165,7 @@ public class TransactionsShow extends AppCompatActivity {
         typeOptions.add("Expenses");
 
         ArrayAdapter<String> adapter = new ArrayAdapter<>(context, android.R.layout.simple_spinner_item, typeOptions);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         typeSpinner.setAdapter(adapter);
 
         // Listener per aggiornare l'adapter quando cambia selezione
@@ -193,7 +199,6 @@ public class TransactionsShow extends AppCompatActivity {
         LinearLayout incomeBox = dialogView.findViewById(R.id.income_box);
         ChipGroup expenseGroup = dialogView.findViewById(R.id.expense_categories);
         ChipGroup incomeGroup = dialogView.findViewById(R.id.income_categories);
-        EditText categorySearch = dialogView.findViewById(R.id.category_search);
         Button findButton = dialogView.findViewById(R.id.find_btn);
         AppCompatImageButton cancelButton = dialogView.findViewById(R.id.cancel_btn);
 
@@ -217,6 +222,22 @@ public class TransactionsShow extends AppCompatActivity {
 
         // Create and show the dialog
         AlertDialog dialog = builder.create();
+
+        findButton.setOnClickListener(v -> {
+            selectedCategories = new ArrayList<>();
+
+            // Metodo di supporto per ottenere le chip selezionate
+            getSelectedChips(selectedCategories, incomeGroup);
+            getSelectedChips(selectedCategories, expenseGroup);
+
+            Log.d("SelectedCategories", "Categorie selezionate: " + selectedCategories);
+
+            Toast.makeText(this, "Filters applied: " + selectedCategories, Toast.LENGTH_SHORT).show();
+            getTransactions(transactionOrder, transactionType, this, this);
+
+            dialog.dismiss();
+        });
+
         cancelButton.setOnClickListener(v -> dialog.dismiss());
         dialog.show();
     }
@@ -241,6 +262,12 @@ public class TransactionsShow extends AppCompatActivity {
             chip.setCheckable(true);
             chip.setClickable(true);
 
+            // Se la categoria è già selezionata, segna la chip come checked
+            if (selectedCategories != null && selectedCategories.contains(categoryName.toLowerCase())) {
+                chip.setChecked(true);
+                clearChip.setVisibility(View.VISIBLE); // mostra "X"
+            }
+
             if (type.equalsIgnoreCase(catType))
                 selected.addView(chip);
         }
@@ -249,9 +276,8 @@ public class TransactionsShow extends AppCompatActivity {
             // Deseleziona tutti i chip
             for (int i = 0; i < selected.getChildCount(); i++) {
                 View child = selected.getChildAt(i);
-                if (child instanceof Chip && ((Chip) child).isChecked()) {
+                if (child instanceof Chip && ((Chip) child).isChecked())
                     ((Chip) child).setChecked(false);
-                }
             }
             clearChip.setVisibility(View.GONE);
         });
@@ -268,5 +294,16 @@ public class TransactionsShow extends AppCompatActivity {
             }
             clearChip.setVisibility(hasSelection ? View.VISIBLE : View.GONE);
         });
+    }
+
+    private void getSelectedChips(ArrayList<String> selectedCategories, ChipGroup chipGroup) {
+        for (int i = 0; i < chipGroup.getChildCount(); i++) {
+            View chipView = chipGroup.getChildAt(i);
+            if (chipView instanceof Chip) {
+                Chip chip = (Chip) chipView;
+                if (chip.isChecked() && !chip.getText().toString().equals("X"))
+                    selectedCategories.add(chip.getText().toString().toLowerCase());
+            }
+        }
     }
 }

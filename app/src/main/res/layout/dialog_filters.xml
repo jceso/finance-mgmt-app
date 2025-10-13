@@ -51,16 +51,16 @@
     </LinearLayout>
 
     <EditText
-        android:id="@+id/category_search"
+        android:id="@+id/year_search"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginVertical="15dp"
         android:layout_marginHorizontal="25dp"
         android:padding="15dp"
         android:autofillHints="Lorem ipsum"
-        android:hint="@string/note"
+        android:hint="year"
         android:textSize="20sp"
-        android:inputType="textCapSentences|textMultiLine"
+        android:inputType="number"
         android:maxLength="100"
         android:background="@drawable/rounded_border"/>
 
