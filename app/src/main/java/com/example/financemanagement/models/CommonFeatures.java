@@ -25,6 +25,8 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 
+import java.util.Locale;
+
 public class CommonFeatures {
     private static long lastBackPressedTime = 0;
     private static Toast backToast;
@@ -97,16 +99,16 @@ public class CommonFeatures {
             // If the user is authenticated, get user info
             FirebaseFirestore firestore = FirebaseFirestore.getInstance();
             firestore.collection("Users").document(user.getUid()).get()
-                    .addOnSuccessListener(documentSnapshot -> {
-                        if (documentSnapshot.exists()) {
-                            // Get the name from the FireStore document and set to button
-                            String name = documentSnapshot.getString("Name");
-                            if (name != null && !name.isEmpty()) {
-                                // First letter of the name
-                            }
-                        } else
-                            Log.d("User Info", "No such document");
-                    });
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        // Get the name from the FireStore document and set to button
+                        String name = documentSnapshot.getString("Name");
+                        if (name != null && !name.isEmpty()) {
+                            // First letter of the name
+                        }
+                    } else
+                        Log.d("User Info", "No such document");
+                });
         }
 
         userAvatar.setOnClickListener(v -> context.startActivity(new Intent(context, UserProfile.class)));
@@ -142,5 +144,15 @@ public class CommonFeatures {
                 .setQuery(query, Transaction.class).setLifecycleOwner(lcOwner).build();
 
         return options;
+    }
+
+    public static String formatAmount(double value) {
+        if (value >= 1000000) {
+            return String.format(Locale.getDefault(), "€%.2fM", value / 1000000);
+        } else if (value >= 1000) {
+            return String.format(Locale.getDefault(), "€%.2fk", value / 1000);
+        } else {
+            return String.format(Locale.getDefault(), "€%.2f", value);
+        }
     }
 }

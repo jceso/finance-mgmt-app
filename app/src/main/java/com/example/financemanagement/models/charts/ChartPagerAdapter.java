@@ -29,6 +29,7 @@ public class ChartPagerAdapter extends FragmentStateAdapter {
     public Fragment createFragment(int position) {
         FirebaseFirestore fStore = FirebaseFirestore.getInstance();
         String userId = Objects.requireNonNull(FirebaseAuth.getInstance().getCurrentUser()).getUid();
+        Log.d("ChartPagerAdapter", "isHome: " + isHome);
         Log.d("ChartPagerAdapter", "createFragment called with position: " + position);
 
         if (!isHome) {

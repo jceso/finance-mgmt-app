@@ -5,6 +5,9 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
+import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -50,7 +53,8 @@ public class PieChartFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fgmt_pie_chart, container, false);
+        View view = inflater.inflate(R.layout.fgmt_pie_chart, container, false);
+        return view;
     }
 
     @Override
@@ -72,8 +76,6 @@ public class PieChartFragment extends Fragment {
         calendar.set(Calendar.SECOND, 59);
         calendar.set(Calendar.MILLISECOND, 999);
         long endOfMonth = calendar.getTimeInMillis();
-
-        Log.d("PieChart Debug", "Start of month: " + startOfMonth + " || End of month: " + endOfMonth);
 
         userRef.get().addOnSuccessListener(userDoc -> {
             if (!userDoc.exists()) return;
@@ -113,9 +115,16 @@ public class PieChartFragment extends Fragment {
                         entries.add(new PieEntry(entry.getValue(), entry.getKey()));
                     }
 
+                    ImageView loading = view.findViewById(R.id.loading);
                     PieDataSet dataSet = new PieDataSet(entries, null);
-                    dataSet.setColors(ColorTemplate.MATERIAL_COLORS);
+                    if (dataSet.getEntryCount() == 0) {
+                        pieChart.setNoDataText("");
+                        loading.setImageResource(R.drawable.pig_search_sad);
+                        return;
+                    }
 
+                    loading.setVisibility(View.GONE);
+                    dataSet.setColors(ColorTemplate.MATERIAL_COLORS);
                     pieChart.setData(new PieData(dataSet));
                     pieChart.getDescription().setEnabled(false);
                     pieChart.getLegend().setEnabled(false);

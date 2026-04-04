@@ -47,15 +47,15 @@ public class CategoryAdapter extends ArrayAdapter<Category> {
 
         // Get the category and set the icon
         Category category = categories.get(position);
-        int iconResId = getIconResourceId(category.getIcon());
-        Log.d("CategoryAdapter", "Category: " + category.getName() + ", Icon resource ID: " + iconResId);
+        int iconResId = getIconResourceId(category.icon);
+        Log.d("CategoryAdapter", "Category: " + category.name + ", Icon resource ID: " + iconResId);
 
         if (iconResId != 0)
             iconView.setImageResource(iconResId);
         else    // Fallback icon
             iconView.setImageResource(R.drawable.category_general);
 
-        nameView.setText(category.getName());
+        nameView.setText(category.name);
 
         return convertView;
     }

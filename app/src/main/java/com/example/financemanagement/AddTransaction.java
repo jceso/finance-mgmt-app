@@ -1,6 +1,7 @@
 package com.example.financemanagement;
 
 import android.os.Bundle;
+import android.util.Log;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -9,10 +10,12 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.viewpager2.widget.ViewPager2;
 
+import com.example.financemanagement.models.Category;
 import com.example.financemanagement.models.CommonFeatures;
 import com.example.financemanagement.models.ViewPagerAdapter;
 import com.google.android.material.tabs.TabLayout;
 
+import java.util.ArrayList;
 import java.util.Objects;
 
 public class AddTransaction extends AppCompatActivity {
@@ -32,14 +35,20 @@ public class AddTransaction extends AppCompatActivity {
         CommonFeatures.initialSettings(this);
         CommonFeatures.setBackToHome(this, this, getOnBackPressedDispatcher());
 
+        // Get amount, merchant, tab index and categories from home/notification
+        double amount = getIntent().getDoubleExtra("AMOUNT", 0);
+        String merchant = getIntent().getStringExtra("MERCHANT");
+        int tabIndex = getIntent().getIntExtra("TAB_INDEX", 1);     // INCOME = 0  |  EXPENSES = 1
+        ArrayList<Category> allCategories = getIntent().getParcelableArrayListExtra("CATEGORIES");
+        Log.d("AddTransaction", "Amount: " + amount + ", Merchant: " + merchant + ", Tab index: " + tabIndex);
+
+        ViewPagerAdapter adapter;
+        adapter = new ViewPagerAdapter(this, amount, merchant, allCategories);
+
         // Setting tabs
         tabLayout = findViewById(R.id.tabLayout);
         viewPager2 = findViewById(R.id.viewPager);
-        ViewPagerAdapter adapter = new ViewPagerAdapter(this);
         viewPager2.setAdapter(adapter);
-
-        // Get tab index from intent    INCOME = 0  |  EXPENSES = 1
-        int tabIndex = getIntent().getIntExtra("TAB_INDEX", 1);
         viewPager2.post(() -> viewPager2.setCurrentItem(tabIndex, false));
 
         tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {

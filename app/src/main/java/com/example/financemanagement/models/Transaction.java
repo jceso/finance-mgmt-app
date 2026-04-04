@@ -74,6 +74,10 @@ public class Transaction {
         LocalDateTime localDateTime = LocalDateTime.of(y, mth, d, h, min);
         this.date = localDateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
     }
+    public void setDate() {
+        LocalDateTime now = LocalDateTime.now();
+        this.date = now.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+    }
 
     public boolean isRecurring() {
         return !FREQ_ONCE.equals(frequency);

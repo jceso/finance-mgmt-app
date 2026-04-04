@@ -24,4 +24,8 @@
     <string name="note">Note</string>
     <string name="expense_categories">Expense categories:</string>
     <string name="income_categories">Income categories:</string>
+    <string name="appwidget_text">EXAMPLE</string>
+    <string name="configure">Configure</string>
+    <string name="add_widget">Add widget</string>
+    <string name="app_widget_description">This is an app widget description</string>
 </resources>

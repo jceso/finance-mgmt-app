@@ -82,7 +82,7 @@ public class Savings extends AppCompatActivity {
                 float maxCurExpenses = currIncomes - calcSavings;
                 Log.d("Savings", "Save percentage after: " + savePerc + "%");
 
-                currSavings.setText(String.format(Locale.getDefault(), "€%.2f", (currIncomes-currExpenses)));
+                currSavings.setText(CommonFeatures.formatAmount(currIncomes - currExpenses));
                 perc.setText(String.format(Locale.getDefault(), "%d%%", savePerc));
                 thCurrSavings.setText(String.format("%s %s", getString(R.string.curr_savings), String.format(Locale.getDefault(), "€%.2f", calcSavings)));
                 monthlyIncome.setText(String.format("%s %s", getString(R.string.monthly_income), String.format(Locale.getDefault(), "€%.2f", currIncomes)));

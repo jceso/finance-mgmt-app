@@ -5,6 +5,9 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
+import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -16,6 +19,7 @@ import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.data.BarData;
 import com.github.mikephil.charting.data.BarDataSet;
 import com.github.mikephil.charting.data.BarEntry;
+import com.github.mikephil.charting.data.PieDataSet;
 import com.github.mikephil.charting.formatter.IndexAxisValueFormatter;
 import com.github.mikephil.charting.utils.ColorTemplate;
 import com.google.firebase.firestore.DocumentReference;
@@ -43,7 +47,8 @@ public class BarChartFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fgmt_bar_chart, container, false);
+        View view = inflater.inflate(R.layout.fgmt_bar_chart, container, false);
+        return view;
     }
 
     @Override
@@ -73,16 +78,25 @@ public class BarChartFragment extends Fragment {
 
             // Get favorite categories
             Map<String, Object> categories = (Map<String, Object>) userDoc.get("Categories");
+            if (categories == null)
+                return;
+
             List<String> favoriteCategories = new ArrayList<>();
             for (Map.Entry<String, Object> entry : Objects.requireNonNull(categories).entrySet()) {
-                Map<String, Object> category = (Map<String, Object>) entry.getValue();
-                if ("expense".equals(category.get("type")))
-                    favoriteCategories.add(entry.getKey());
+                Object value = entry.getValue();
+                if (value instanceof Map) {
+                    Map<String, Object> categoryMap = (Map<String, Object>) value;
+                    Object typeObj = categoryMap.get("type");
+                    if ("expense".equals(typeObj)) {
+                        favoriteCategories.add(entry.getKey());
+                    }
+                }
             }
 
             // Fetch all expense transactions for the current month
             userRef.collection("Transactions")
-                .whereGreaterThanOrEqualTo("date", startOfMonth).whereLessThanOrEqualTo("date", endOfMonth)
+                .whereGreaterThanOrEqualTo("date", startOfMonth)
+                .whereLessThanOrEqualTo("date", endOfMonth)
                 .get().addOnSuccessListener(querySnapshot -> {
                     Map<String, Float> categorySums = new HashMap<>();
 
@@ -91,7 +105,7 @@ public class BarChartFragment extends Fragment {
                         String category = doc.getString("category");
                         Number amount = doc.getDouble("amount");
 
-                        if ("expense".equals(type) && favoriteCategories.contains(category) && amount != null)
+                        if ("expense".equals(type) && category != null && favoriteCategories.contains(category) && amount != null)
                             categorySums.put(category, categorySums.getOrDefault(category, 0f) + amount.floatValue());
                         Log.d("PieChart Debug", "Category: " + category + ", Amount: " + amount + " | Category sums: " + categorySums);
                     }
@@ -107,6 +121,13 @@ public class BarChartFragment extends Fragment {
                     }
 
                     BarDataSet dataSet = new BarDataSet(entries, null);
+                    ImageView loading = view.findViewById(R.id.loading);
+                    if (dataSet.getEntryCount() == 0) {
+                        barChart.setNoDataText("");
+                        loading.setImageResource(R.drawable.pig_search_sad);
+                        return;
+                    }
+
                     dataSet.setColors(ColorTemplate.MATERIAL_COLORS);
                     barChart.setData(new BarData(dataSet));
 

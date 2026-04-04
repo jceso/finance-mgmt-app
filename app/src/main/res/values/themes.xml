@@ -71,8 +71,7 @@
     <style name="Footbar">
         <item name="android:background">@drawable/footbar_light</item>
     </style>
-</resources>
-    <!--
+</resources><!--
     Primary Yellow: #FFC107 (A warm, vibrant yellow for key elements)
        - Darker: #FFA000
        - Lighter: #FFDD57

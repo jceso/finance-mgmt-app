@@ -13,6 +13,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.RadioGroup;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -37,14 +38,21 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 public class ViewPagerAdapter extends FragmentStateAdapter {
     private static int[] dateInfos;
     private static FirebaseUser user;
     private static FirebaseFirestore db;
+    private static double amount = 0;
+    private static String merchant = "";
+    private static List<Category> allCategories = new ArrayList<>();
 
-    public ViewPagerAdapter(@NonNull FragmentActivity fragmentActivity) {
+    public ViewPagerAdapter(@NonNull FragmentActivity fragmentActivity, double amount, String merchant, List<Category> allCategories) {
         super(fragmentActivity);
+        ViewPagerAdapter.amount = amount;
+        ViewPagerAdapter.merchant = merchant;
+        ViewPagerAdapter.allCategories = allCategories;
     }
 
     @NonNull
@@ -58,20 +66,32 @@ public class ViewPagerAdapter extends FragmentStateAdapter {
 
     @Override
     public int getItemCount() {
-        return 2; // We have two fragments, Income and Expenses
+        return 2;
     }
 
     public static class IncomeFragment extends Fragment {
-
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
             View view = inflater.inflate(R.layout.fgmt_inc_exp, container, false);
 
+            Spinner category_spinner = view.findViewById(R.id.category_spinner);
             Button income_btn = view.findViewById(R.id.income_btn);
             view.findViewById(R.id.expense_btn).setVisibility(View.GONE);
             income_btn.setVisibility(View.VISIBLE);
+            if (amount != 0 && merchant != null) {
+                TextView amountTxt = view.findViewById(R.id.amount);
+                amountTxt.setText(String.format("%.2f", amount));
+                TextView merchantTxt = view.findViewById(R.id.note);
+                merchantTxt.setText(merchant);
+            }
 
-            checkAndSaveTransaction(view, income_btn, false, requireContext());
+            List<Category> categoriesSpinner = allCategories.stream()
+                                                            .filter(c -> c.type.equals("income"))
+                                                            .collect(Collectors.toList());
+
+            CategoryAdapter adapter = new CategoryAdapter(requireContext(), categoriesSpinner);
+            category_spinner.setAdapter(adapter);
+            checkAndSaveTransaction(view, income_btn, category_spinner, false, requireContext());
 
             return view;
         }
@@ -79,54 +99,29 @@ public class ViewPagerAdapter extends FragmentStateAdapter {
 
     public static class ExpensesFragment extends Fragment {
         @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                                 Bundle savedInstanceState) {
+        public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
             View view = inflater.inflate(R.layout.fgmt_inc_exp, container, false);
 
+            Spinner category_spinner = view.findViewById(R.id.category_spinner);
             Button expense_btn = view.findViewById(R.id.expense_btn);
             view.findViewById(R.id.income_btn).setVisibility(View.GONE);
             expense_btn.setVisibility(View.VISIBLE);
+            if (amount != 0 && merchant != null) {
+                TextView amountTxt = view.findViewById(R.id.amount);
+                amountTxt.setText(String.format("%.2f", amount));
+                TextView merchantTxt = view.findViewById(R.id.note);
+                merchantTxt.setText(merchant);
+            }
 
-            checkAndSaveTransaction(view, expense_btn, true, requireContext());
+            List<Category> categoriesSpinner = allCategories.stream()
+                                                            .filter(c -> c.type.equals("expense"))
+                                                            .collect(Collectors.toList());
+
+            CategoryAdapter adapter = new CategoryAdapter(requireContext(), categoriesSpinner);
+            category_spinner.setAdapter(adapter);
+            checkAndSaveTransaction(view, expense_btn, category_spinner, true, requireContext());
 
             return view;
-        }
-    }
-
-    private static void spinnerSetup(Spinner category_spinner, Boolean isExpense, Context context) {
-        if (user != null) {
-            String categoryType = isExpense ? "expense" : "income";
-            Log.d("SpinnerSetup","Category type: " + categoryType);
-
-            db.collection("Users").document(user.getUid()).get()
-                .addOnSuccessListener(documentSnapshot -> {
-                    if (documentSnapshot.exists()) {
-                        // Retrieve the categories array from the user document
-                        Map<String, Map<String, Object>> categoriesMap = (Map<String, Map<String, Object>>) documentSnapshot.get("Categories");
-                        Log.d("SpinnerSetup", "Categories: " + categoriesMap);
-
-                        if (categoriesMap != null) {
-                            List<Category> categories = new ArrayList<>();
-
-                            for (Map.Entry<String, Map<String, Object>> entry : categoriesMap.entrySet()) {
-                                String name = entry.getKey();
-                                name = name.substring(0, 1).toUpperCase() + name.substring(1).toLowerCase();
-                                Map<String, Object> cat = entry.getValue();
-                                String type = (String) cat.get("type");
-
-                                Log.d("SpinnerSetup", "Name: " + name + ", Type: " + type + " - Asked for: " + categoryType);
-
-                                if (Objects.equals(type, categoryType)) {
-                                    String icon = (String) cat.get("icon");
-                                    categories.add(new Category(type, name, icon));
-                                }
-                            }
-
-                            CategoryAdapter adapter = new CategoryAdapter(context, categories);
-                            category_spinner.setAdapter(adapter);
-                        }
-                    }
-            }).addOnFailureListener(e -> Log.e("SpinnerSetup", "Error in retrieving categories", e));
         }
     }
 
@@ -168,20 +163,18 @@ public class ViewPagerAdapter extends FragmentStateAdapter {
         });
     }
 
-    public static void checkAndSaveTransaction(View view, Button save_btn, Boolean isExpense, Context context) {
+    public static void checkAndSaveTransaction(View view, Button save_btn, Spinner category_spinner, Boolean isExpense, Context context) {
         FirebaseApp.initializeApp(context);
         db = FirebaseFirestore.getInstance();
         user = FirebaseAuth.getInstance().getCurrentUser();
 
         EditText amount = view.findViewById(R.id.amount);
-        Spinner category_spinner = view.findViewById(R.id.category_spinner);
         EditText note = view.findViewById(R.id.note);
         Button date_btn = view.findViewById(R.id.btn_date);
         Button time_btn = view.findViewById(R.id.btn_time);
         Button repeat = view.findViewById(R.id.repeat);
         RadioGroup card_or_cash = view.findViewById(R.id.card_cashGroup);
 
-        spinnerSetup(category_spinner, isExpense, context);
         dateDialog(date_btn, time_btn, LocalDateTime.now(), context);
         repeat.setOnClickListener(v -> {
             String[] repeatOptions = {"Not repeated", "Daily", "Weekly", "Monthly", "Yearly"};
@@ -241,7 +234,6 @@ public class ViewPagerAdapter extends FragmentStateAdapter {
                     pmt_method = "credit_card";
                 else
                     pmt_method = "cash";
-                Log.d("BalanceDebug", "Selected method: " + pmt_method);
 
                 // Transaction setting
                 float transactionAmount = Float.parseFloat(amount.getText().toString());
@@ -260,7 +252,7 @@ public class ViewPagerAdapter extends FragmentStateAdapter {
                 Transaction transaction = new Transaction();
                 transaction.setType(isExpense ? "expense" : "income");
                 transaction.setAmount(transactionAmount);
-                transaction.setCategory(((Category)category_spinner.getSelectedItem()).getName());
+                transaction.setCategory(((Category)category_spinner.getSelectedItem()).name);
                 transaction.setNote(note.getText().toString());
                 transaction.setDate(dateInfos[0], dateInfos[1], dateInfos[2], dateInfos[3], dateInfos[4]);
                 transaction.setMethod(pmt_method);
@@ -269,9 +261,15 @@ public class ViewPagerAdapter extends FragmentStateAdapter {
                 DocumentReference userRef = db.collection("Users").document(user.getUid());
 
                 // Save transaction in FireStoreFirebase
-                userRef.collection("Transactions").add(transaction)
-                    .addOnSuccessListener(documentReference -> Log.d("SaveTransaction", "Saved transaction with ID: " + documentReference.getId() + " | Category " + transaction.getCategory()))
-                    .addOnFailureListener(e -> Log.e("SaveTransaction", "Saving error", e));
+                if (!isRepeated) {
+                    userRef.collection("Transactions").add(transaction)
+                           .addOnSuccessListener(documentReference -> Log.d("SaveTransaction", "Saved transaction with ID: " + documentReference.getId() + " | Category " + transaction.getCategory()))
+                           .addOnFailureListener(e -> Log.e("SaveTransaction", "Saving error", e));
+                } else {
+                    transaction.setLastExecuted(dateInfos[0], dateInfos[1], dateInfos[2], dateInfos[3], dateInfos[4]);
+
+                }
+
 
                 // Save repeated transaction in FireStoreFirebase
                 if (isRepeated) {
